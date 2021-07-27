@@ -8,7 +8,7 @@ from pathlib import Path
 path = str(Path.cwd().parents[2])
 import sys
 sys.path.append(path + '\\Crypte\\Lab Paillier')
-import .lab_paillier
+import lab_paillier
 
 import pickle
 public_key, private_key = lab_paillier.generate_lab_paillier_keypair() 

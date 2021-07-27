@@ -9,7 +9,7 @@ path = str(Path.cwd().parents[2])#index needs to be set for cwd which will likel
 import pickle
 import random
 import sys
-print(path)
+
 sys.path.append(path + '\\Crypte\\Lab Paillier')
 
 from lab_paillier import LabEncryptedNumber
@@ -17,8 +17,6 @@ from lab_paillier import LabEncryptedNumber
 with open(path + '\\Crypte\\Public_Key\\public_key', 'rb') as public_key_file:
   public_key = pickle.load(public_key_file)
   
-deuijk = LabEncryptedNumber(public_key,908795643345,9089786)
-print(deuijk)
 with open(path + '\\Crypte\\CSP\\Key Manager\\private_key', 'rb') as private_key_file:
   private_key = pickle.load(private_key_file)
 with open(path + '\\Crypte\\CSP\\Data_Decryption\\Multiply\\lab_multiply_ciphers', 'rb') as AS_multiply_file:
