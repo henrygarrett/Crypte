@@ -34,18 +34,6 @@ import os
 
 
 DEFAULT_KEYSIZE = 2048
-def localGen(pk):
-    seed = ''
-    for i in range(100):
-        seed += str(random.randint(0,1))
-    seed_encoded = int(seed,2)
-    seed_encrypted = pk.encrypt(seed_encoded, None)
-    return bin(seed_encoded), seed_encrypted
-def gen_label():
-    label = str(random.randint(1,9))
-    for i in range(29):
-        label += str(random.randint(0,9))
-    return int(label)
 
 class LabPaillierPublicKey(PaillierPublicKey):
     def lab_encrypt(self, message_encoded, label, seed):
