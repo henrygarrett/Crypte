@@ -1,8 +1,9 @@
 import math
-import itertools
 import random
 import os
 import pickle
+import lab_paillier
+path = 'C:\\Users\\madma\\Documents\\Internship'
 def cross_product(public_key, data_set, attribute1, attribute2):
     new_data_set = data_set
     for i, element in enumerate(new_data_set):
@@ -88,13 +89,13 @@ def group_by_count_encoded(public_key, data_set, attribute):
             return output_list
     gbc_vector = group_by_count(public_key, data_set, attribute)
     M = [random.randint(0,10**40) for n in range(len(gbc_vector))]
-    gbc_vector_masked = [public_key.lab_encrypt(M[i])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
-    with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\gbc_vector_masked','wb') as gbc_vector_masked_file:
+    gbc_vector_masked = [public_key.lab_encrypt(M[i], lab_paillier.gen_label(),lab_paillier.localGen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
+    with open(path + '\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\gbc_vector_masked','wb') as gbc_vector_masked_file:
         pickle.dump(gbc_vector_masked, gbc_vector_masked_file)
-    with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\data_set_size.txt','w') as data_set_size_file:
+    with open(path + '\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\data_set_size.txt','w') as data_set_size_file:
         data_set_size_file.write(len(data_set))
-    os.system('C:\\Users\\madma\\Documents\\Internship\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\group_by_count_encoded.py')
-    with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\AS\\Program Executor\\Operators\\gbce_return_vector_CSP', 'rb') as gbce_return_vector_file:
+    os.system(path + '\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\group_by_count_encoded.py')
+    with open(path + '\\Crypte\\AS\\Program Executor\\Operators\\gbce_return_vector_CSP', 'rb') as gbce_return_vector_file:
          return_vector_encrypted = pickle.load(gbce_return_vector_file)
     return [rightRotate(return_vector_encrypted[i],M[i]) for i in range(len(return_vector_encrypted))]
                     

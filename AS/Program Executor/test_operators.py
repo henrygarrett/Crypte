@@ -4,14 +4,17 @@ Created on Thu Jul 22 15:32:18 2021
 
 @author: madma
 """
+from pathlib import Path
+path = str(Path.cwd().parents[2])
+
 import sys
-sys.path.append('C:\\Users\\madma\\Documents\\Internship\\Crypte\\Lab Paillier')
+sys.path.append(path + '\\Crypte\\Lab Paillier')
 import pickle
-sys.path.append('C:\\Users\\madma\\Documents\\Internship\\Crypte\\AS\\Program Executor\\Operators')
+sys.path.append(path + '\\Crypte\\AS\\Program Executor\\Operators')
 import Operators
-with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\AS\\Aggregator\\aggregated_data','rb') as aggregated_data_file:
+with open(path + '\\Crypte\\AS\\Aggregator\\aggregated_data','rb') as aggregated_data_file:
     data = pickle.load(aggregated_data_file)
-with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\Public_Key\\public_key','rb') as public_key_file:
+with open(path + '\\Crypte\\Public_Key\\public_key','rb') as public_key_file:
     public_key = pickle.load(public_key_file)     
 data2 = []
 for i in range(10):

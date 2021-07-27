@@ -4,14 +4,16 @@ Created on Tue Jul 20 11:17:28 2021
 
 @author: madma
 """
+from pathlib import Path
+path = str(Path.cwd().parents[2])
 import sys
-sys.path.append('C:\\Users\\madma\\Documents\\Internship\\Crypte\\Lab paillier')
+sys.path.append(path + '\\Crypte\\Lab paillier')
 import lab_paillier 
 import pickle
 public_key, private_key = lab_paillier.generate_lab_paillier_keypair()
-with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\Public_Key\\public_key','wb') as public_key_file:
+with open(path + '\\Crypte\\Public_Key\\public_key','wb') as public_key_file:
     pickle.dump(public_key, public_key_file)
-with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\CSP\\Key Manager\\private_key', 'wb') as private_key_file:
+with open(path + '\\Crypte\\CSP\\Key Manager\\private_key', 'wb') as private_key_file:
     pickle.dump(private_key, private_key_file)
 
 x = 90784647389434

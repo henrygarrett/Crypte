@@ -20,7 +20,8 @@
 """Paillier encryption library for partially homomorphic encryption."""
 import random
 from phe import PaillierPublicKey, EncryptedNumber, PaillierPrivateKey
-
+from pathlib import Path
+path = str(Path.cwd().parents[2])
 try:
     from collections.abc import Mapping
 except ImportError:
@@ -33,6 +34,18 @@ import os
 
 
 DEFAULT_KEYSIZE = 2048
+def localGen(pk):
+    seed = ''
+    for i in range(100):
+        seed += str(random.randint(0,1))
+    seed_encoded = int(seed,2)
+    seed_encrypted = pk.encrypt(seed_encoded, None)
+    return bin(seed_encoded), seed_encrypted
+def gen_label():
+    label = str(random.randint(1,9))
+    for i in range(29):
+        label += str(random.randint(0,9))
+    return int(label)
 
 class LabPaillierPublicKey(PaillierPublicKey):
     def lab_encrypt(self, message_encoded, label, seed):
@@ -48,10 +61,10 @@ class LabPaillierPublicKey(PaillierPublicKey):
     def general_lab_multiplication(self, cipher1,cipher2):
         mask = random.randint(0,10**40)
         intermediary = self.encrypt(mask)._add_encrypted(self.multiply_ciphers(cipher1,cipher2))
-        with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\CSP\\Data_Decryption\\Multiply\\lab_multiply_ciphers','wb') as AS_multiply_file:
+        with open(path + '\\Crypte\\CSP\\Data_Decryption\\Multiply\\lab_multiply_ciphers','wb') as AS_multiply_file:
             pickle.dump([intermediary, cipher1, cipher2], AS_multiply_file)
-        os.system('C:\\Users\\madma\\Documents\\Internship\\Crypte\\CSP\\Data_Decryption\\Multiply\\lab_multiply_ciphers.py')
-        with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\AS\\Program Executor\\return_cipher_CSP', 'rb') as return_cipher_CSP_file:
+        os.system(path + '\\Crypte\\CSP\\Data_Decryption\\Multiply\\lab_multiply_ciphers.py')
+        with open(path + '\\Crypte\\AS\\Program Executor\\return_cipher_CSP', 'rb') as return_cipher_CSP_file:
             return_cipher = pickle.load(return_cipher_CSP_file)
         new_message_obfuscated = return_cipher.message_obfuscated - mask
         return LabEncryptedNumber(self, new_message_obfuscated,return_cipher.label_encrypted)

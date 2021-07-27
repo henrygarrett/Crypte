@@ -3,10 +3,12 @@ import os
 import ast
 import random
 import gmpy2
- 
+from pathlib import Path
+path = str(Path.cwd().parents[1])
+print(path)
 
 #imports public key to encrypt DOs data 
-with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\Public_Key\\public_key', 'rb') as public_key_file:
+with open(path + '\\Crypte\\Public_Key\\public_key', 'rb') as public_key_file:
     public_key = pickle.load(public_key_file)
  
 with open('data_set.txt', 'r') as data_set_file:
@@ -19,7 +21,6 @@ def localGen(pk):
         seed += str(random.randint(0,1))
     seed_encoded = int(seed,2)
     seed_encrypted = pk.encrypt(seed_encoded, None)
-    print(seed_encrypted)
     return bin(seed_encoded), seed_encrypted
 def gen_label():
     label = str(random.randint(0,9))
@@ -39,14 +40,12 @@ for data in data_set:
     data_onehot_encoded.append(age_onehot_encoded)
     data_onehot_encoded.append(country_onehot_encoded)
     data_onehot_encoded.append(smoke_onehot_encoded)
-    print(data_onehot_encoded)
     seed, pki = localGen(public_key)
     label = gen_label()
 
     data_encrypted = [[public_key.lab_encrypt(value, label, seed) for value in attribute] for attribute in data_onehot_encoded]
-    print(data_encrypted)
-    path, dirs, files = next(os.walk('C:\\Users\\madma\\Documents\\Internship\\Crypte\\AS\\Aggregator\\Raw Data'))
+    pad, dirs, files = next(os.walk(path + '\\Crypte\\AS\\Aggregator\\Raw Data'))
     file_count = len(files)
-    print(file_count)
-    with open('C:\\Users\\madma\\Documents\\Internship\\Crypte\\AS\\Aggregator\\Raw Data\\data_' + str(file_count) , 'wb') as data_file:
+    print(path)
+    with open(path + '\\Crypte\\AS\\Aggregator\\Raw Data\\data_' + str(file_count) , 'wb') as data_file:
       pickle.dump(data_encrypted, data_file)

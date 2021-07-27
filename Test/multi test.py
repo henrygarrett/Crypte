@@ -4,9 +4,10 @@ Created on Fri Jul 16 18:41:34 2021
 
 @author: madma
 """
-
+from pathlib import Path
+path = str(Path.cwd().parents[1])
 import sys
-sys.path.append('C:\\Users\\madma\\Documents\\Internship\\Crypte\\Lab paillier')
+sys.path.append(path + '\\Crypte\\Lab paillier')
 import lab_paillier
 import gmpy2
 
