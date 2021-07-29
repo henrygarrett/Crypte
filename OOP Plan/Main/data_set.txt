@@ -1,1 +1,0 @@
-[['39', 'italy', 'yes'], ['31', 'germany', 'no'], ['40', 'italy', 'yes'], ['34', 'germany', 'yes'], ['26', 'uk', 'no']]
