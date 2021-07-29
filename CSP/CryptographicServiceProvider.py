@@ -5,15 +5,9 @@ from .PrivacyEngine import PrivacyEngine
 from .KeyManager import KeyManager
 from .DataDecryption import DataDecryption
 
-import sys
-sys.path.append(path + '\\Crypte\\Lab paillier')
 
 class CryptographicServiceProvider():
-    def __init__(self, epsilon_budget, new):
+    def __init__(self, epsilon_budget, generate_keys=False):
         self.privacy_engine = PrivacyEngine(epsilon_budget)
-        self.key_manager = KeyManager(new)
+        self.key_manager = KeyManager(generate_keys)
         self.data_decryption = DataDecryption()
-
-    def lab_mult(self):
-        out = self.data_decryption.lab_multiplication(self.key_manager.public_key, self.key_manager.private_key, )
-        return out
