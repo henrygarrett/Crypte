@@ -7,9 +7,8 @@ import random
 import pickle
 import os
 import sys
-PATH= str(Path.cwd().parents[2])
-sys.path.append(PATH + '\\Crypte\\Lab Paillier')
-sys.path.append(PATH + '\\Crypte\\AS\\Program Executor\\Operators')
+PATH= str(Path.cwd().parents[0])
+sys.path.append(PATH + '\\Lab Paillier')
 
 
 
@@ -18,24 +17,30 @@ class Aggregator():
     '''the overall class for data aggregation.
     Contains three methods for aggregating data depending on input'''
     def __init__(self):
-        self.data_set = self.get_data()
+        self.data = self.get_data()
+        self.data_encoded = None
+        self.data_encrypted = None
 
     def get_data(self):
-        if os.path.isfile('data_set.txt'):
-            with open('data_set.txt', 'w') as data_set_file:
+        if 'data_set.txt' in os.listdir(PATH + '\\AS'):
+            with open('data_set.txt', 'r') as data_set_file:
                 return ast.literal_eval(data_set_file.read())
         else:
-            return self.set_data(True)
+            return self.set_data(5,True)
     def encode_data(self):
+        if self.data == None:
+            print('No data to encode!')
+            return None
         data_encoded = []
-        for data in self.data_set:
+        for value in self.data:
             countries = ['uk', 'france', 'germany', 'spain', 'italy']
             age_onehot_encoded = [0 for i in range(20,41)]
-            age_onehot_encoded[int(data[0])-20] = 1#puts a 1 at the age-th position
-            smoke_onehot_encoded = [1,0] if data[2] == 'yes' else [0,1]
+            age_onehot_encoded[int(value[0])-20] = 1#puts a 1 at the age-th position
+            smoke_onehot_encoded = [1,0] if value[2] == 'yes' else [0,1]
             country_onehot_encoded = [0 for i in range(len(countries))]
-            country_onehot_encoded[int(countries.index(data[1]))] = 1
+            country_onehot_encoded[int(countries.index(value[1]))] = 1
             data_encoded.append([age_onehot_encoded,country_onehot_encoded,smoke_onehot_encoded])
+        self.data_encoded = data_encoded
         return data_encoded
     def local_gen(self, public_key):
         seed = ''
@@ -50,16 +55,20 @@ class Aggregator():
             label += str(random.randint(0,9))
         return int(label)
     def encrypt_data(self, public_key):
-        for data in self.data_set:
+        if self.data_encoded == None:
+            print('No encoded data to encrypt!')
+            return None
+        data_list = []
+        for data in self.data_encoded:
             seed = self.local_gen(public_key)[0]
             label = self.gen_label()
             data_encrypted = [[public_key.lab_encrypt(value, label, seed)
                                for value in attribute] for attribute in data]
-            files = next(os.walk(PATH+ '\\Crypte\\AS\\Aggregator\\Raw Data'))[2]
-            file_count = len(files)
-            with open(PATH+ '\\Crypte\\AS\\Aggregator\\Raw Data\\data_'
-                      + str(file_count) , 'wb') as data_file:
-                pickle.dump(data_encrypted, data_file)
+            data_list.append(data_encrypted)
+        with open('encrypted_data', 'wb') as data_file:
+                pickle.dump(data_list, data_file)
+        self.data_encrypted = data_list
+
     def set_data(self, entries = 5, return_value = False):
 
         countries = ['uk', 'france', 'germany', 'spain', 'italy']
@@ -80,10 +89,9 @@ class Aggregator():
 
     def merge_encrypted_data(self, directory):
         merged_data = []
-        #directory = PATH+ '\\Crypte\\AS\\Aggregator\\Raw Data'
+        #directory = PATH + '\\AS\\Raw Data'
         for filename in os.listdir(directory):
             with open(directory + '\\' + str(filename), 'rb') as data_file:
                 merged_data.append(pickle.load(data_file))
-        with open(PATH+ '\\Crypte\\AS\\Aggregator\\aggregated_data',
-                  'wb') as aggregated_data_file:
+        with open(PATH + '\\AS\\aggregated_data', 'wb') as aggregated_data_file:
             pickle.dump(merged_data, aggregated_data_file)

@@ -31,6 +31,7 @@ from phe import EncodedNumber
 from phe.util import invert, powmod, getprimeover, isqrt
 import pickle
 import os
+import gmpy2
 
 
 DEFAULT_KEYSIZE = 2048
@@ -38,12 +39,15 @@ DEFAULT_KEYSIZE = 2048
 class LabPaillierPublicKey(PaillierPublicKey):
     def lab_encrypt(self, message_encoded, label, seed):
         mask = int(seed, 2)*label*random.randint(0,10**40)
-        message_obfuscated = message_encoded - mask
+        message_obfuscated = int(message_encoded) - mask
         label_encrypted = self.encrypt(mask)
         encrypted_number = LabEncryptedNumber(self, message_obfuscated, label_encrypted)
         return encrypted_number
     def multiply_ciphers(self, cipher1, cipher2):
-        product_label = self.encrypt(cipher1.message_obfuscated * cipher2.message_obfuscated) + (cipher1.message_obfuscated * cipher2.label_encrypted) + (cipher2.message_obfuscated * cipher1.label_encrypted)
+        part1 = self.encrypt(cipher1.message_obfuscated * cipher2.message_obfuscated)
+        part2 = (cipher1.message_obfuscated * cipher2.label_encrypted)
+        part3 = (cipher2.message_obfuscated * cipher1.label_encrypted)
+        product_label = part1 + part2 + part3 
         return product_label
 
     def general_lab_multiplication(self, cipher1,cipher2):

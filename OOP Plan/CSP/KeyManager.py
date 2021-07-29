@@ -2,10 +2,10 @@
 # import paillier library etc
 import pathlib
 import sys
-path = str(pathlib.Path.cwd().parents[2])
-sys.path.append(path + '\\Crypte\\Lab Paillier')
-import lab_paillier
 import pickle
+path = str(pathlib.Path.cwd().parents[0])
+sys.path.append(path + '\\Lab Paillier')
+import lab_paillier
 
 class KeyManager():
     def __init__(self):
@@ -20,19 +20,19 @@ class KeyManager():
         self.__write_private_key(private_key)
 
     def __read_public_key(self):
-        with open(path + '\\Crypte\\Public_Key\\public_key', 'rb') as public_key_file:
+        with open(path + '\\Public Key\\public_key', 'rb') as public_key_file:
             return pickle.load(public_key_file)
 
     def __read_private_key(self):
-        with open(path + '\\Crypte\\CSP\\private_key', 'rb') as private_key_file:
+        with open(path + '\\CSP\\private_key', 'rb') as private_key_file:
             return pickle.load(private_key_file)
 
     def __write_public_key(self, public_key):
-        with open(path + '\\Crypte\\Public_Key\\public_key', 'wb') as public_key_file:
+        with open(path + '\\Public Key\\public_key', 'wb') as public_key_file:
             pickle.dump(public_key, public_key_file)
 
     def __write_private_key(self, private_key):
-        with open(path + '\\Crypte\\CSP\\private_key', 'wb') as private_key_file:
+        with open(path + '\\CSP\\private_key', 'wb') as private_key_file:
             pickle.dump(private_key, private_key_file)
     
 

@@ -52,10 +52,12 @@ class ProgramExecutor():
                 for i, attribute in enumerate(row):
                     new_data_set[n].append([])
                     for j, value in enumerate(attribute):
-                        new_data_set[n][i].append(public_key.general_lab_multiplication(row_indicator,data_set[n][i][j]))
+                        product = public_key.general_lab_multiplication(row_indicator,data_set[n][i][j])
+                        new_data_set[n][i].append(product)
             else:
                 for j, value in enumerate(row):
-                        new_data_set[n].append(public_key.general_lab_multiplication(row_indicator,data_set[n][j]))
+                    product = public_key.general_lab_multiplication(row_indicator,data_set[n][j])
+                    new_data_set[n].append(product)
             bit_vector.append(row_indicator)
                 
         return new_data_set, bit_vector
