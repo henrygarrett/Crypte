@@ -33,7 +33,6 @@ import pickle
 import os
 import gmpy2
 
-
 DEFAULT_KEYSIZE = 2048
 
 class LabPaillierPublicKey(PaillierPublicKey):
@@ -43,6 +42,7 @@ class LabPaillierPublicKey(PaillierPublicKey):
         label_encrypted = self.encrypt(mask)
         encrypted_number = LabEncryptedNumber(self, message_obfuscated, label_encrypted)
         return encrypted_number
+
     def multiply_ciphers(self, cipher1, cipher2):
         part1 = self.encrypt(cipher1.message_obfuscated * cipher2.message_obfuscated)
         part2 = (cipher1.message_obfuscated * cipher2.label_encrypted)
@@ -61,7 +61,6 @@ class LabPaillierPublicKey(PaillierPublicKey):
             return_cipher = pickle.load(return_cipher_CSP_file)
         new_message_obfuscated = return_cipher.message_obfuscated - mask
         return LabEncryptedNumber(self, new_message_obfuscated,return_cipher.label_encrypted)
-        
    
     
 class LabPaillierPrivateKey(PaillierPrivateKey):
