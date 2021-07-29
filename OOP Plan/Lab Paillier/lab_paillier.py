@@ -50,13 +50,14 @@ class LabPaillierPublicKey(PaillierPublicKey):
         product_label = part1 + part2 + part3 
         return product_label
 
-    def general_lab_multiplication(self, cipher1,cipher2):
+    def general_lab_multiplication(self, cipher1,cipher2, CSP):
         mask = random.randint(0,10**40)
         intermediary = self.encrypt(mask)._add_encrypted(self.multiply_ciphers(cipher1,cipher2))
-        with open(path + '\\Crypte\\CSP\\Data_Decryption\\Multiply\\lab_multiply_ciphers','wb') as AS_multiply_file:
+        with open(path + 'CSP\\lab_multiply_ciphers','wb') as AS_multiply_file:
             pickle.dump([intermediary, cipher1, cipher2], AS_multiply_file)
-        os.system(path + '\\Crypte\\CSP\\Data_Decryption\\Multiply\\lab_multiply_ciphers.py')
-        with open(path + '\\Crypte\\AS\\Program Executor\\return_cipher_CSP', 'rb') as return_cipher_CSP_file:
+        #os.system(path + 'CSP\\lab_multiply_ciphers.py')
+        CSP.data_decryption.lab_multiplication()
+        with open(path + '\\AS\\return_cipher_CSP', 'rb') as return_cipher_CSP_file:
             return_cipher = pickle.load(return_cipher_CSP_file)
         new_message_obfuscated = return_cipher.message_obfuscated - mask
         return LabEncryptedNumber(self, new_message_obfuscated,return_cipher.label_encrypted)

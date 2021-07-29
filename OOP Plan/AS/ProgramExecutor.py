@@ -8,22 +8,22 @@ class ProgramExecutor():
     def __init__(self):
         pass
     
-    def cross_product(self, public_key, data_set, attribute1, attribute2):
+    def cross_product(self, public_key, data_set, attribute1, attribute2, CSP):
         new_data_set = data_set
         for i, element in enumerate(new_data_set):
             vector1 = element.pop(attribute1)
             vector2 = element.pop(attribute2 if attribute1 > attribute2 else attribute2 - 1)
             vector_new = []
             for l in range(len(vector1)*len(vector2)):
-                vector_new.append(public_key.general_lab_multiplication(vector1[math.floor(l/len(vector2))],vector2[l%len(vector2)]))
+                vector_new.append(public_key.general_lab_multiplication(vector1[math.floor(l/len(vector2))],vector2[l%len(vector2)]), CSP)
             element.append(vector_new)
         return new_data_set
-    def project(self, data_set, attribute_chosen):
+    def project(self, data_set, attribute_chosen, CSP):
         new_data_set = []
         for element in data_set:
             new_data_set.append(element[attribute_chosen])
         return new_data_set
-    def filter(self, public_key, data_set, predicate):#predicate inputed in double binary list i.e. [[0,1,0,1],[1,1,1,0],[1,1]]
+    def filter(self, public_key, data_set, predicate, CSP):#predicate inputed in double binary list i.e. [[0,1,0,1],[1,1,1,0],[1,1]]
         bit_vector = []    
         new_data_set = []
         for n, row in enumerate(data_set):
@@ -37,7 +37,7 @@ class ProgramExecutor():
                             except UnboundLocalError:
                                 attribute_indicator = attribute[j]
                     try:
-                        row_indicator = public_key.general_lab_multiplication(row_indicator,attribute_indicator)
+                        row_indicator = public_key.general_lab_multiplication(row_indicator,attribute_indicator, CSP)
                     except UnboundLocalError:
                         row_indicator = attribute_indicator
                 else:
@@ -52,11 +52,11 @@ class ProgramExecutor():
                 for i, attribute in enumerate(row):
                     new_data_set[n].append([])
                     for j, value in enumerate(attribute):
-                        product = public_key.general_lab_multiplication(row_indicator,data_set[n][i][j])
+                        product = public_key.general_lab_multiplication(row_indicator,data_set[n][i][j], CSP)
                         new_data_set[n][i].append(product)
             else:
                 for j, value in enumerate(row):
-                    product = public_key.general_lab_multiplication(row_indicator,data_set[n][j])
+                    product = public_key.general_lab_multiplication(row_indicator,data_set[n][j], CSP)
                     new_data_set[n].append(product)
             bit_vector.append(row_indicator)
                 
@@ -69,17 +69,17 @@ class ProgramExecutor():
             except UnboundLocalError:
                 total = value
         return total
-    def group_by_count(self, public_key, data_set, attribute):
+    def group_by_count(self, public_key, data_set, attribute, CSP):
         return_vector = []
-        new_data_set = self.project(data_set, attribute)
+        new_data_set = self.project(data_set, attribute, CSP)
         attribute_size =  len(data_set[0][attribute])
         for value in range(attribute_size):
             predicate = [[0  if i != value else 1 for i in range(attribute_size)]]
-            blank, bit_vector = self.filter(public_key, new_data_set, predicate)
+            blank, bit_vector = self.filter(public_key, new_data_set, predicate, CSP)
             return_vector.append(self.count(bit_vector))
         return return_vector
     
-    def group_by_count_encoded(self, public_key, data_set, attribute):
+    def group_by_count_encoded(self, public_key, data_set, attribute, CSP):
         def rightRotate(lists, num):
             output_list = []
           
@@ -93,15 +93,16 @@ class ProgramExecutor():
                 output_list.append(lists[item])
               
                 return output_list
-        gbc_vector = self.group_by_count(public_key, data_set, attribute)
+        gbc_vector = self.group_by_count(public_key, data_set, attribute, CSP)
         M = [random.randint(0,10**40) for n in range(len(gbc_vector))]
         gbc_vector_masked = [public_key.lab_encrypt(M[i], lab_paillier.gen_label(),lab_paillier.localGen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
-        with open(path + '\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\gbc_vector_masked','wb') as gbc_vector_masked_file:
+        with open(path + '\\CSP\\gbc_vector_masked','wb') as gbc_vector_masked_file:
             pickle.dump(gbc_vector_masked, gbc_vector_masked_file)
-        with open(path + '\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\data_set_size.txt','w') as data_set_size_file:
+        with open(path + '\\CSP\\data_set_size.txt','w') as data_set_size_file:
             data_set_size_file.write(len(data_set))
         os.system(path + '\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\group_by_count_encoded.py')
-        with open(path + '\\Crypte\\AS\\Program Executor\\Operators\\gbce_return_vector_CSP', 'rb') as gbce_return_vector_file:
+        CSP.data_decryption.group_by_count_encoded()
+        with open(path + '\\AS\\gbce_return_vector_CSP', 'rb') as gbce_return_vector_file:
              return_vector_encrypted = pickle.load(gbce_return_vector_file)
         return [rightRotate(return_vector_encrypted[i],M[i]) for i in range(len(return_vector_encrypted))]
                         
