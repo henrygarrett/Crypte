@@ -28,7 +28,7 @@ class Aggregator():
         else:
             return self.set_data(5,True)
     def encode_data(self):
-        if self.data == None:
+        if self.data is None:
             print('No data to encode!')
             return None
         data_encoded = []
@@ -55,7 +55,7 @@ class Aggregator():
             label += str(random.randint(0,9))
         return int(label)
     def encrypt_data(self, public_key):
-        if self.data_encoded == None:
+        if self.data_encoded is None:
             print('No encoded data to encrypt!')
             return None
         data_list = []
@@ -66,8 +66,9 @@ class Aggregator():
                                for value in attribute] for attribute in data]
             data_list.append(data_encrypted)
         with open('encrypted_data', 'wb') as data_file:
-                pickle.dump(data_list, data_file)
+            pickle.dump(data_list, data_file)
         self.data_encrypted = data_list
+        return data_list
 
     def set_data(self, entries = 5, return_value = False):
 

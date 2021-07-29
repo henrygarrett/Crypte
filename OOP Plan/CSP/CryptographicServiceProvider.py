@@ -9,7 +9,7 @@ sys.path.append(path + '\\Crypte\\Lab paillier')
 
 
 class CryptographicServiceProvider():
-    def __init__(self, epsilon_budget):
+    def __init__(self, epsilon_budget, new):
         self.privacy_engine = PrivacyEngine(epsilon_budget)
-        self.key_manager = KeyManager()
+        self.key_manager = KeyManager(new)
         self.data_decryption = DataDecryption()

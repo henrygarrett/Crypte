@@ -12,53 +12,68 @@ import ast
 PATH = str(pathlib.Path.cwd().parents[0])
 sys.path.append(PATH + '\\CSP')
 sys.path.append(PATH + '\\AS')
-import CryptographicServiceProvider
+from CryptographicServiceProvider import CryptographicServiceProvider
 import AnalyticsServer
 
 AS = AnalyticsServer.AnalyticsServer()
 
 
-if input('Replace budget, keys and data? y/n\n') != 'y':
-    if 'budget.txt' not in os.listdir(PATH + '\\CSP'):
-        print('There is no version so will create new budget, keys and data')
-        CSP = CryptographicServiceProvider.CryptographicServiceProvider(input('What is the privacy budget?: '))
+# if input('Replace budget, keys and data? y/n\n') != 'y':
+#     if 'budget.txt' not in os.listdir(PATH + '\\CSP'):
+#         print('There is no version so will create new budget, keys and data')
+#         CSP = CryptographicServiceProvider.CryptographicServiceProvider(input('What is the privacy budget?: '), True)
     
-        #Creates Public and Private Keys and stores them in the appropriate places
-        CSP.key_manager.generate_keys()
+#         #Creates Public and Private Keys and stores them in the appropriate places
+#         CSP.key_manager.generate_keys()
         
-        public_key = CSP.key_manager.public_key
+#         public_key = CSP.key_manager.public_key
         
-        #Creates then encodes then encrypts the data
-        AS.aggregator.get_data()
-        AS.aggregator.encode_data()
-        AS.aggregator.encrypt_data(public_key)
-    else:
-        #Retrieves previous epsilon budget
-        with open(PATH +'\\CSP\\budget.txt', 'r') as budget_file:
-            CSP = CryptographicServiceProvider.CryptographicServiceProvider(int(budget_file.read()))
+#         #Creates then encodes then encrypts the data
+#         AS.aggregator.get_data()
+#         AS.aggregator.encode_data()
+#         AS.aggregator.encrypt_data(public_key)
+#     else:
+#         #Retrieves previous epsilon budget
+#         with open(PATH +'\\CSP\\budget.txt', 'r') as budget_file:
+#             CSP = CryptographicServiceProvider(int(budget_file.read()), True)
         
-        #Retrieves previous public_key from save file    
-        public_key = CSP.key_manager.public_key
+#         #Retrieves previous public_key from save file    
+#         public_key = CSP.key_manager.public_key
         
-        #Retrieves encrypted data and raw data
-        with open(PATH + '\\Main\\data_set.txt', 'r') as data_file:
-            AS.aggregator.data = ast.literal_eval(data_file.read())
+#         #Retrieves encrypted data and raw data
+#         with open(PATH + '\\Main\\data_set.txt', 'r') as data_file:
+#             AS.aggregator.data = ast.literal_eval(data_file.read())
     
-        with open(PATH + '\\Main\\encrypted_data', 'rb') as data_file:
-               AS.aggregator.data_encrypted = pickle.load(data_file) 
-else:    
-    CSP = CryptographicServiceProvider.CryptographicServiceProvider(input('What is the privacy budget?: '))
+#         with open(PATH + '\\Main\\encrypted_data', 'rb') as data_file:
+#                AS.aggregator.data_encrypted = pickle.load(data_file) 
+# else:    
+#     CSP = CryptographicServiceProvider(input('What is the privacy budget?: '), True)
     
-    #Creates Public and Private Keys and stores them in the appropriate places
-    CSP.key_manager.generate_keys()
+#     #Creates Public and Private Keys and stores them in the appropriate places
+#     CSP.key_manager.generate_keys()
     
-    public_key = CSP.key_manager.public_key
+#     public_key = CSP.key_manager.public_key
     
-    #Creates then encodes then encrypts the data
-    AS.aggregator.get_data()
-    AS.aggregator.encode_data()
-    AS.aggregator.encrypt_data(public_key)
+#     #Creates then encodes then encrypts the data
+#     AS.aggregator.get_data()
+#     AS.aggregator.encode_data()
+#     AS.aggregator.encrypt_data(public_key)
     
+
+
+CSP = CryptographicServiceProvider(input('What is the privacy budget?: '), True)
+
+#Creates Public and Private Keys and stores them in the appropriate places
+CSP.key_manager.generate_keys()
+
+public_key = CSP.key_manager.public_key
+
+#Creates then encodes then encrypts the data
+AS.aggregator.get_data()
+AS.aggregator.encode_data()
+AS.aggregator.encrypt_data(public_key)
+
+
 
 
 
