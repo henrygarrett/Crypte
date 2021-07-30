@@ -54,9 +54,9 @@ class LabPaillierPublicKey(PaillierPublicKey):
 
     def multiply_ciphers(self, cipher1, cipher2):
         part1 = self.encrypt(cipher1.message_obfuscated * cipher2.message_obfuscated)
-        part2 = (cipher2.label_encrypted)._raw_mul(cipher1.message_obfuscated)
-        part3 = (cipher1.label_encrypted)._raw_mul(cipher2.message_obfuscated)
-        product_label = part1._add_encrypted(part2)._add_encrypted(part3)
+        part2 = cipher2.label_encrypted * cipher1.message_obfuscated
+        part3 = cipher1.label_encrypted * cipher2.message_obfuscated
+        product_label = part1 + part2 + part3
         return product_label
 
     def general_lab_multiplication(self, cipher1,cipher2, CSP):

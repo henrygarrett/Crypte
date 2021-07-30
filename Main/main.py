@@ -39,7 +39,7 @@ if input('Replace budget, keys and data? y/n\n') != 'y':
     else:
         #Retrieves previous epsilon budget
         with open(PATH +'\\CSP\\budget.txt', 'r') as budget_file:
-            CSP = CryptographicServiceProvider(int(budget_file.read()), True)
+            CSP = CryptographicServiceProvider(int(budget_file.read()), False)
         
         #Retrieves previous public_key from save file    
         public_key = CSP.key_manager.public_key
@@ -62,7 +62,7 @@ else:
     AS.aggregator.get_data()
     AS.aggregator.encode_data()
     AS.aggregator.encrypt_data(public_key)
-
+print(public_key)
 # Operators
 print(AS.program_executor.group_by_count_encoded(public_key, AS.aggregator.data_encrypted, 1, CSP))
 finish_time = time.perf_counter()

@@ -2,7 +2,6 @@ import math
 import random
 import os
 import pickle
-import lab_paillier
 
 path = 'C:\\Users\\madma\\Documents\\Internship'
 
@@ -100,10 +99,20 @@ class ProgramExecutor():
                 return output_list
         gbc_vector = self.group_by_count(public_key, data_set, attribute, CSP)
         M = [random.randint(0,10**40) for n in range(len(gbc_vector))]
-        gbc_vector_masked = [public_key.lab_encrypt(M[i], lab_paillier.gen_label(),lab_paillier.local_gen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
+        gbc_vector_masked = [public_key.lab_encrypt(M[i], self.gen_label(),self.local_gen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.data_decryption.group_by_count_encoded(gbc_vector_masked, len(data_set), CSP)
         return [rightRotate(return_vector_encrypted[i],M[i]) for i in range(len(return_vector_encrypted))]
                         
-                
-            
+    def local_gen(self, public_key):
+        seed = ''
+        for _ in range(100):
+            seed += str(random.randint(0,1))
+        seed_encoded = int(seed,2)
+        seed_encrypted = public_key.encrypt(seed_encoded, None)
+        return bin(seed_encoded), seed_encrypted
+    def gen_label(self):
+        label = str(random.randint(1,9))
+        for _ in range(29):
+            label += str(random.randint(0,9))
+        return int(label)
         
