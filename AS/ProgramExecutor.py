@@ -101,14 +101,7 @@ class ProgramExecutor():
         gbc_vector = self.group_by_count(public_key, data_set, attribute, CSP)
         M = [random.randint(0,10**40) for n in range(len(gbc_vector))]
         gbc_vector_masked = [public_key.lab_encrypt(M[i], lab_paillier.gen_label(),lab_paillier.localGen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
-        with open(path + '\\CSP\\gbc_vector_masked','wb') as gbc_vector_masked_file:
-            pickle.dump(gbc_vector_masked, gbc_vector_masked_file)
-        with open(path + '\\CSP\\data_set_size.txt','w') as data_set_size_file:
-            data_set_size_file.write(len(data_set))
-        os.system(path + '\\Crypte\\CSP\\Data_Decryption\\Group_By_Count_Encoded\\group_by_count_encoded.py')
-        CSP.data_decryption.group_by_count_encoded()
-        with open(path + '\\AS\\gbce_return_vector_CSP', 'rb') as gbce_return_vector_file:
-             return_vector_encrypted = pickle.load(gbce_return_vector_file)
+        return_vector_encrypted = CSP.data_decryption.group_by_count_encoded(gbc_vector_masked, len(data_set))
         return [rightRotate(return_vector_encrypted[i],M[i]) for i in range(len(return_vector_encrypted))]
                         
                 

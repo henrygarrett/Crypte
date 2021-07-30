@@ -11,11 +11,11 @@ import pickle
 import os
 import ast
 
-# PATH = str(pathlib.Path.cwd().parents[0])
+PATH = str(pathlib.Path.cwd().parents[0])
 # sys.path.append(PATH + os.sep + 'CSP')
 # sys.path.append(PATH + '\\AS')
 
-from CSP import CryptographicServiceProvider
+from CSP.CryptographicServiceProvider import CryptographicServiceProvider
 from AS.AnalyticsServer import AnalyticsServer
 
 AS = AnalyticsServer()
