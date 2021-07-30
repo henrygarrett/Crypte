@@ -64,7 +64,7 @@ else:
     AS.aggregator.encrypt_data(public_key)
 print(public_key)
 # Operators
-print(AS.program_executor.group_by_count_encoded(public_key, AS.aggregator.data_encrypted, 1, CSP))
+print(AS.program_executor.group_by_count_encoded(public_key, AS.aggregator.data_encrypted, 2, CSP))
 finish_time = time.perf_counter()
 print(finish_time - start_time)
 

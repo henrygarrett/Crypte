@@ -86,7 +86,7 @@ class ProgramExecutor():
     def group_by_count_encoded(self, public_key, data_set, attribute, CSP):
         def rightRotate(lists, num):
             output_list = []
-          
+            print(list)
             # Will add values from n to the new list
             for item in range(len(lists) - (num%len(lists)), len(lists)):
                 output_list.append(lists[item])
@@ -95,13 +95,14 @@ class ProgramExecutor():
             # n to the end of new list    
             for item in range(0, len(lists) - num): 
                 output_list.append(lists[item])
+            
               
-                return output_list
+            return output_list
         gbc_vector = self.group_by_count(public_key, data_set, attribute, CSP)
         M = [random.randint(0,10**5) for n in range(len(gbc_vector))]
         gbc_vector_masked = [public_key.lab_encrypt(M[i], self.gen_label(),self.local_gen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.data_decryption.group_by_count_encoded(gbc_vector_masked, len(data_set), CSP)
-        return [rightRotate(return_vector_encrypted[i],M[i]) for i in range(len(return_vector_encrypted))]
+        return [rightRotate(return_vector_encrypted[i], M[i]) for i in range(len(return_vector_encrypted))]
                         
     def local_gen(self, public_key):
         seed = ''
