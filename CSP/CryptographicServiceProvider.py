@@ -11,3 +11,4 @@ class CryptographicServiceProvider():
         self.privacy_engine = PrivacyEngine(epsilon_budget)
         self.key_manager = KeyManager(generate_keys)
         self.data_decryption = DataDecryption()
+        self.public_key = self.key_manager.public_key

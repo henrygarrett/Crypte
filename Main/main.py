@@ -6,10 +6,12 @@ Created on Wed Jul 28 09:51:30 2021
 """
 
 import pathlib
-import sys
 import pickle
 import os
 import ast
+import time
+
+start_time = time.perf_counter()
 
 PATH = str(pathlib.Path.cwd().parents[0])
 # sys.path.append(PATH + os.sep + 'CSP')
@@ -62,7 +64,8 @@ else:
     AS.aggregator.encrypt_data(public_key)
 
 # Operators
-new_data = AS.program_executor.group_by_count_encoded(public_key, AS.aggregator.data_encrypted, 1, CSP)
+print(AS.program_executor.group_by_count_encoded(public_key, AS.aggregator.data_encrypted, 1, CSP))
+finish_time = time.perf_counter()
+print(finish_time - start_time)
 
-print(new_data)
 

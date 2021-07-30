@@ -29,43 +29,47 @@ except ImportError:
 
 from phe import EncodedNumber
 from phe.util import invert, powmod, getprimeover, isqrt
-import pickle
-import os
 import gmpy2
 
 DEFAULT_KEYSIZE = 2048
-
+def gen_label(self):
+    label = str(random.randint(1,9))
+    for _ in range(29):
+        label += str(random.randint(0,9))
+    return int(label)
+def local_gen(self, public_key):
+    seed = ''
+    for _ in range(100):
+        seed += str(random.randint(0,1))
+    seed_encoded = int(seed,2)
+    seed_encrypted = public_key.encrypt(seed_encoded, None)
+    return bin(seed_encoded), seed_encrypted
 class LabPaillierPublicKey(PaillierPublicKey):
     def lab_encrypt(self, message_encoded, label, seed):
         mask = int(seed, 2)*label*random.randint(0,10**40)
-        message_obfuscated = int(message_encoded) - mask
+        message_obfuscated = int(message_encoded) + mask
         label_encrypted = self.encrypt(mask)
         encrypted_number = LabEncryptedNumber(self, message_obfuscated, label_encrypted)
         return encrypted_number
 
     def multiply_ciphers(self, cipher1, cipher2):
         part1 = self.encrypt(cipher1.message_obfuscated * cipher2.message_obfuscated)
-        part2 = (cipher1.message_obfuscated * cipher2.label_encrypted)
-        part3 = (cipher2.message_obfuscated * cipher1.label_encrypted)
-        product_label = part1 + part2 + part3 
+        part2 = (cipher2.label_encrypted)._raw_mul(cipher1.message_obfuscated)
+        part3 = (cipher1.label_encrypted)._raw_mul(cipher2.message_obfuscated)
+        product_label = part1._add_encrypted(part2)._add_encrypted(part3)
         return product_label
 
     def general_lab_multiplication(self, cipher1,cipher2, CSP):
         mask = random.randint(0,10**40)
         intermediary = self.encrypt(mask)._add_encrypted(self.multiply_ciphers(cipher1,cipher2))
-        with open(path + 'CSP\\lab_multiply_ciphers','wb') as AS_multiply_file:
-            pickle.dump([intermediary, cipher1, cipher2], AS_multiply_file)
-        #os.system(path + 'CSP\\lab_multiply_ciphers.py')
-        CSP.data_decryption.lab_multiplication()
-        with open(path + '\\AS\\return_cipher_CSP', 'rb') as return_cipher_CSP_file:
-            return_cipher = pickle.load(return_cipher_CSP_file)
+        return_cipher = CSP.data_decryption.lab_multiplication(intermediary, cipher1, cipher2, CSP)
         new_message_obfuscated = return_cipher.message_obfuscated - mask
         return LabEncryptedNumber(self, new_message_obfuscated,return_cipher.label_encrypted)
    
     
 class LabPaillierPrivateKey(PaillierPrivateKey):
     def lab_decrypt(self, encrypted_number):
-        return encrypted_number.message_obfuscated + self.decrypt(encrypted_number.label_encrypted)
+        return encrypted_number.message_obfuscated - self.decrypt(encrypted_number.label_encrypted)
     def lab_multiply_decrypt(self, cipher1, cipher2, product_label):
         product = self.decrypt(product_label) + self.decrypt(cipher1.label_encrypted) * self.decrypt(cipher2.label_encrypted)
         return product
