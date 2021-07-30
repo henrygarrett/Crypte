@@ -1,3 +1,5 @@
 .idea
 **/.pylint.d
 **/__pycache__
+.spyproject
+*.pyc
