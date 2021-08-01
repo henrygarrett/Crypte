@@ -17,6 +17,23 @@ class CryptographicServiceProvider():
         return "CryptographicServiceProvider" + str(
             {"KeyManager": self.key_manager.__str__(), "PrivacyEngine": self.privacy_engine.__str__()})
 
+    def decrypt_data(self, encrypted_data):
+        return [self.decrypt_row(encrypted_row) for encrypted_row in encrypted_data]
+
+    # Should contain an encrypted row of one-hot vectors to be decrypted
+    def decrypt_row(self, encrypted_row):
+        print(encrypted_row)
+        decrypted_data = []
+        for encoded_attr in encrypted_row:
+            print(encoded_attr)
+            decrypted_attribute = []
+            for encrypted_number in encoded_attr:
+                print(encrypted_number)
+                decrypted_attribute.append(self.key_manager.private_key.decrypt(encrypted_number))
+            decrypted_data.append(decrypted_attribute)
+
+        return decrypted_data
+
     def lab_multiplication(self, intermediary, cipher1, cipher2):
         public_key = self.public_key
         private_key = self.key_manager.private_key
