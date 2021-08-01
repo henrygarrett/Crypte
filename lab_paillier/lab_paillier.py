@@ -62,7 +62,7 @@ class LabPaillierPublicKey(PaillierPublicKey):
     def general_lab_multiplication(self, cipher1,cipher2, CSP):
         mask = random.randint(0,10**40)
         intermediary = self.encrypt(mask)._add_encrypted(self.multiply_ciphers(cipher1,cipher2))
-        return_cipher = CSP.data_decryption.lab_multiplication(intermediary, cipher1, cipher2, CSP)
+        return_cipher = CSP.lab_multiplication(intermediary, cipher1, cipher2)
         new_message_obfuscated = return_cipher.message_obfuscated - mask
         return LabEncryptedNumber(self, new_message_obfuscated,return_cipher.label_encrypted)
    

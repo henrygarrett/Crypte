@@ -100,7 +100,7 @@ class ProgramExecutor():
         gbc_vector = self.group_by_count(public_key, self.encrypted_data, attribute, CSP)
         M = [random.randint(0,10**5) for n in range(len(gbc_vector))]
         gbc_vector_masked = [public_key.lab_encrypt(M[i], self.gen_label(),self.local_gen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
-        return_vector_encrypted = CSP.data_decryption.group_by_count_encoded(gbc_vector_masked, len(self.encrypted_data), CSP)
+        return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(self.encrypted_data))
         return [rightRotate(return_vector_encrypted[i], M[i]) for i in range(len(return_vector_encrypted))]
                         
     def local_gen(self, public_key):
