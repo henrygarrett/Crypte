@@ -77,8 +77,8 @@ class Aggregator():
         if attribute_nums is None: # If the attribute_nums is None, then we assume we are being provided a dataset with all attributes and will map all of them
             attribute_nums = range(0,len(attribute_map.keys()))
 
-        for attr_num in attribute_nums:
-            decoded_data.append(list(attribute_map.values())[attr_num][encoded_row[attr_num].index(1)])
+        for i,attr_num in enumerate(attribute_nums):
+            decoded_data.append(list(attribute_map.values())[attr_num][encoded_row[i].index(1)])
 
         return decoded_data
 

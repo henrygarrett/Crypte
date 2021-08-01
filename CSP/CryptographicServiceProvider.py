@@ -22,14 +22,11 @@ class CryptographicServiceProvider():
 
     # Should contain an encrypted row of one-hot vectors to be decrypted
     def decrypt_row(self, encrypted_row):
-        print(encrypted_row)
         decrypted_data = []
         for encoded_attr in encrypted_row:
-            print(encoded_attr)
             decrypted_attribute = []
             for encrypted_number in encoded_attr:
-                print(encrypted_number)
-                decrypted_attribute.append(self.key_manager.private_key.decrypt(encrypted_number))
+                decrypted_attribute.append(self.key_manager.private_key.lab_decrypt(encrypted_number))
             decrypted_data.append(decrypted_attribute)
 
         return decrypted_data
