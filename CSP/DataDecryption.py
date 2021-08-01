@@ -19,8 +19,7 @@ class DataDecryption():
     def __init__(self):
         path
         #lab_multiply_ciphers
-        
-        
+
     def lab_multiplication(self, intermediary, cipher1, cipher2, CSP):
         public_key = CSP.public_key
         private_key = CSP.key_manager.private_key
@@ -46,6 +45,7 @@ class DataDecryption():
                     return_vector[i].append(1)
         return_vector_encrypted = [[public_key.lab_encrypt(bit, self.gen_label(),self.local_gen(public_key)[0]) for bit in value] for value in return_vector]
         return return_vector_encrypted
+
     def local_gen(self, public_key):
         seed = ''
         for _ in range(100):
@@ -53,6 +53,7 @@ class DataDecryption():
         seed_encoded = int(seed,2)
         seed_encrypted = public_key.encrypt(seed_encoded, None)
         return bin(seed_encoded), seed_encrypted
+
     def gen_label(self):
         label = str(random.randint(1,9))
         for _ in range(29):

@@ -1,5 +1,5 @@
-from pathlib import Path
-path = str(Path.cwd().parents[2])#index needs to be set for cwd which will likely be where operators are run not this file
+# from pathlib import Path
+# path = str(Path.cwd().parents[2])#index needs to be set for cwd which will likely be where operators are run not this file
 
 from .PrivacyEngine import PrivacyEngine
 from .KeyManager import KeyManager
@@ -12,3 +12,6 @@ class CryptographicServiceProvider():
         self.key_manager = KeyManager(generate_keys)
         self.data_decryption = DataDecryption()
         self.public_key = self.key_manager.public_key
+
+    def __str__(self):
+        return "CryptographicServiceProvider" + str({"KeyManager": self.key_manager.__str__(), "PrivacyEngine": self.privacy_engine.__str__()})
