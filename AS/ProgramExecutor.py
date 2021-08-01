@@ -1,9 +1,6 @@
 import math
 import random
-import os
-import pickle
-
-path = 'C:\\Users\\madma\\Documents\\Internship'
+import numpy as np
 
 class ProgramExecutor():
     def __init__(self, encrypted_data=None):
@@ -20,10 +17,11 @@ class ProgramExecutor():
             element.append(vector_new)
         return new_data_set
 
-    def project(self, attribute_chosen, CSP):
+    def project(self, attributes_chosen):
         new_data_set = []
         for element in self.encrypted_data:
-            new_data_set.append(element[attribute_chosen])
+            new_data_set.append(list(np.array(element)[attributes_chosen])) # By making it a numpy array we can pass indexes as attributes chosen
+            # i.e passing [0,2] will do a projection onto the first and third attribute etc
         return new_data_set
 
     def filter(self, public_key, predicate, CSP):#predicate inputed in double binary list i.e. [[0,1,0,1],[1,1,1,0],[1,1]]
@@ -116,4 +114,3 @@ class ProgramExecutor():
         for _ in range(29):
             label += str(random.randint(0,9))
         return int(label)
-        
