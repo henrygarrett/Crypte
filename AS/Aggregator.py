@@ -7,6 +7,8 @@ import random
 import pickle
 import os
 import sys
+import numpy as np
+
 PATH= str(Path.cwd().parents[0])
 sys.path.append(PATH + '\\Lab Paillier')
 
@@ -28,47 +30,57 @@ class Aggregator():
         else:
             return self.set_data(5,True)
 
-    def encode_data(self):
+    # when we eventually use real data attribute map will contain a map of attributes to their list of values which will be used to one-hot encode
+    def encode_data(self, attribute_map=None, attribute_nums=None):
         if self.data is None:
             print('No data to encode!')
             return None
-        data_encoded = []
-        for value in self.data:
+
+        return [self.encode_row(row, attribute_map, attribute_nums) for row in self.data]
+
+    # Maps a row of raw data to a one-hot encoded version, can optionally provide an attribute_map to with with other data than our toy dataset
+    def encode_row(self, raw_row, attribute_map=None, attribute_nums=None):
+
+        if attribute_map is None: # If this is None, then we are assuming our toy dataset with 3 attributes
             countries = ['uk', 'france', 'germany', 'spain', 'italy']
-            age_onehot_encoded = [0 for i in range(20,41)]
-            age_onehot_encoded[int(value[0])-20] = 1#puts a 1 at the age-th position
-            smoke_onehot_encoded = [1,0] if value[2] == 'yes' else [0,1]
-            country_onehot_encoded = [0 for i in range(len(countries))]
-            country_onehot_encoded[int(countries.index(value[1]))] = 1
-            data_encoded.append([age_onehot_encoded,country_onehot_encoded,smoke_onehot_encoded])
-        return data_encoded
+            smoker = ["yes", "no"]
+            ages = [str(i) for i in range(20,41)]
+            attribute_map = {"ages": ages, "countries": countries, "smoker": smoker}
 
-    def decode_data(self, encoded_data):
-        countries = ['uk', 'france', 'germany', 'spain', 'italy']
-        smoker = ["yes", "no"]
-        ages = [i for i in range(20,41)]
-        print(ages)
-        attributes = [ages, countries, smoker]
+        if attribute_nums is None: # If the attribute_nums is None, then we assume we are being provided a dataset with all attributes and will map all of them
+            attribute_nums = range(0,len(attribute_map.keys()))
 
+        encoded_row = []
+        for i, val in enumerate(raw_row):
+            attr_num = attribute_nums[i]
+            attr_map = list(attribute_map.values())[attr_num]
+            one_hot_index = attr_map.index(val)
+            one_hot = np.zeros(len(attr_map), dtype="uint8")
+            one_hot[one_hot_index] = 1
+            encoded_row.append(list(one_hot))
+
+        return encoded_row
+
+    def decode_data(self, encoded_data, attribute_map=None, attribute_nums=None):
+        return [self.decode_row(encoded_row, attribute_map, attribute_nums) for encoded_row in encoded_data]
+
+    # decodes a row of raw data
+    def decode_row(self, encoded_row, attribute_map=None, attribute_nums=None):
         decoded_data = []
-        for i, attribute in enumerate(encoded_data):
-            decoded_data.append(attributes[i][attribute.index(1)])
+
+        if attribute_map is None: # If this is None, then we are assuming our toy dataset with 3 attributes
+            countries = ['uk', 'france', 'germany', 'spain', 'italy']
+            smoker = ["yes", "no"]
+            ages = [i for i in range(20,41)]
+            attribute_map = {"ages": ages, "countries": countries, "smoker": smoker}
+
+        if attribute_nums is None: # If the attribute_nums is None, then we assume we are being provided a dataset with all attributes and will map all of them
+            attribute_nums = range(0,len(attribute_map.keys()))
+
+        for attr_num in attribute_nums:
+            decoded_data.append(list(attribute_map.values())[attr_num][encoded_row[attr_num].index(1)])
 
         return decoded_data
-
-    def local_gen(self, public_key):
-        seed = ''
-        for _ in range(100):
-            seed += str(random.randint(0,1))
-        seed_encoded = int(seed,2)
-        seed_encrypted = public_key.encrypt(seed_encoded, None)
-        return bin(seed_encoded), seed_encrypted
-
-    def gen_label(self):
-        label = str(random.randint(1,9))
-        for _ in range(29):
-            label += str(random.randint(0,9))
-        return int(label)
 
     def encrypt_data(self, public_key):
         if self.data_encoded is None:
@@ -110,3 +122,17 @@ class Aggregator():
                 merged_data.append(pickle.load(data_file))
         with open(PATH + '\\AS\\aggregated_data', 'wb') as aggregated_data_file:
             pickle.dump(merged_data, aggregated_data_file)
+
+    def local_gen(self, public_key):
+        seed = ''
+        for _ in range(100):
+            seed += str(random.randint(0,1))
+        seed_encoded = int(seed,2)
+        seed_encrypted = public_key.encrypt(seed_encoded, None)
+        return bin(seed_encoded), seed_encrypted
+
+    def gen_label(self):
+        label = str(random.randint(1,9))
+        for _ in range(29):
+            label += str(random.randint(0,9))
+        return int(label)
