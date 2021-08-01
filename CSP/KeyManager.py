@@ -16,6 +16,9 @@ class KeyManager():
             self.public_key = self.__read_public_key()
             self.private_key = self.__read_private_key()
 
+    def __str__(self):
+        return "Public Key (n): " + str(self.public_key.n)[0:6] + " Private Key (p,q): " + str(self.private_key.p)[0:6] + "," + str(self.private_key.q)[0:6]
+
     def generate_keys(self):
         public_key, private_key = generate_lab_paillier_keypair()
         self.__write_public_key(public_key)

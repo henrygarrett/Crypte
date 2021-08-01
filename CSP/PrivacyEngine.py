@@ -6,6 +6,9 @@ class PrivacyEngine():
         self.epsilon_budget = epsilon_budget
         self.save_epsilon_budget()
 
+    def __str__(self):
+        return "Privacy Budget: " + str(self.epsilon_budget)
+
     def is_program_allowed(self, program_epsilon):
         if self.epsilon_budget - program_epsilon < 0:
             return False
