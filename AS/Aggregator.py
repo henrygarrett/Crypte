@@ -10,16 +10,16 @@ import sys
 PATH= str(Path.cwd().parents[0])
 sys.path.append(PATH + '\\Lab Paillier')
 
-
-
-
 class Aggregator():
     '''the overall class for data aggregation.
     Contains three methods for aggregating data depending on input'''
     def __init__(self):
         self.data = self.get_data()
-        self.data_encoded = None
+        self.data_encoded = self.encode_data()
         self.data_encrypted = None
+
+    def __str__(self):
+        return "Raw Data - " + str(self.data)
 
     def get_data(self):
         if 'data_set.txt' in os.listdir(PATH + os.sep + 'AS'):
@@ -27,6 +27,7 @@ class Aggregator():
                 return ast.literal_eval(data_set_file.read())
         else:
             return self.set_data(5,True)
+
     def encode_data(self):
         if self.data is None:
             print('No data to encode!')
@@ -40,8 +41,21 @@ class Aggregator():
             country_onehot_encoded = [0 for i in range(len(countries))]
             country_onehot_encoded[int(countries.index(value[1]))] = 1
             data_encoded.append([age_onehot_encoded,country_onehot_encoded,smoke_onehot_encoded])
-        self.data_encoded = data_encoded
         return data_encoded
+
+    def decode_data(self, encoded_data):
+        countries = ['uk', 'france', 'germany', 'spain', 'italy']
+        smoker = ["yes", "no"]
+        ages = [i for i in range(20,41)]
+        print(ages)
+        attributes = [ages, countries, smoker]
+
+        decoded_data = []
+        for i, attribute in enumerate(encoded_data):
+            decoded_data.append(attributes[i][attribute.index(1)])
+
+        return decoded_data
+
     def local_gen(self, public_key):
         seed = ''
         for _ in range(100):
@@ -49,11 +63,13 @@ class Aggregator():
         seed_encoded = int(seed,2)
         seed_encrypted = public_key.encrypt(seed_encoded, None)
         return bin(seed_encoded), seed_encrypted
+
     def gen_label(self):
         label = str(random.randint(1,9))
         for _ in range(29):
             label += str(random.randint(0,9))
         return int(label)
+
     def encrypt_data(self, public_key):
         if self.data_encoded is None:
             print('No encoded data to encrypt!')
@@ -85,8 +101,6 @@ class Aggregator():
         if return_value:
             return data_set
         return None
-
-
 
     def merge_encrypted_data(self, directory):
         merged_data = []
