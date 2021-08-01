@@ -9,9 +9,6 @@ import os
 import sys
 import numpy as np
 
-PATH= str(Path.cwd().parents[0])
-sys.path.append(PATH + '\\Lab Paillier')
-
 class Aggregator():
     '''the overall class for data aggregation.
     Contains three methods for aggregating data depending on input'''
@@ -24,7 +21,7 @@ class Aggregator():
         return "Raw Data - " + str(self.data)
 
     def get_data(self):
-        if 'data_set.txt' in os.listdir(PATH + os.sep + 'AS'):
+        if 'data_set.txt' in os.listdir(".." + os.sep + 'Main' + os.sep):
             with open('data_set.txt', 'r') as data_set_file:
                 return ast.literal_eval(data_set_file.read())
         else:
@@ -99,7 +96,6 @@ class Aggregator():
         return data_list
 
     def set_data(self, entries = 5, return_value = False):
-
         countries = ['uk', 'france', 'germany', 'spain', 'italy']
         data_set = []
 
