@@ -75,6 +75,17 @@ def test_encode_decode(verbose=True):
 
     assert decoded_data == raw_data
 
+
+# Tests general LabHE multiplication
+def test_HE_mult():
+    ciphertext1 = CSP.key_manager.public_key.lab_encrypt(3, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
+    ciphertext2 = CSP.key_manager.public_key.lab_encrypt(4, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
+
+    result = CSP.key_manager.public_key.general_lab_multiplication(ciphertext1, ciphertext2, CSP)
+    decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
+    print(decrypted_result)
+    assert decrypted_result == 12
+
 # Tests the Project Operator works correctly
 def test_project(verbose=True):
 
@@ -117,7 +128,7 @@ def test_filter():
     print("Decrypted filter:", CSP.decrypt_bit_vector(bit_vector))
 
 # test_encode_decode()
+test_HE_mult()
 # test_project()
 # test_count()
-
-test_filter()
+# test_filter()
