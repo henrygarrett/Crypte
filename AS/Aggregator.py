@@ -12,9 +12,10 @@ import numpy as np
 class Aggregator():
     '''the overall class for data aggregation.
     Contains three methods for aggregating data depending on input'''
-    def __init__(self):
+    def __init__(self, public_key):
         self.data = self.get_data()
         self.data_encoded = self.encode_data()
+        self.public_key = public_key
         self.data_encrypted = None
 
     def __str__(self):
@@ -79,15 +80,15 @@ class Aggregator():
 
         return decoded_data
 
-    def encrypt_data(self, public_key):
+    def encrypt_data(self):
         if self.data_encoded is None:
             print('No encoded data to encrypt!')
             return None
         data_list = []
         for data in self.data_encoded:
-            seed = self.local_gen(public_key)[0]
+            seed = self.local_gen(self.public_key)[0]
             label = self.gen_label()
-            data_encrypted = [[public_key.lab_encrypt(value, label, seed)
+            data_encrypted = [[self.public_key.lab_encrypt(value, label, seed)
                                for value in attribute] for attribute in data]
             data_list.append(data_encrypted)
         with open('encrypted_data', 'wb') as data_file:

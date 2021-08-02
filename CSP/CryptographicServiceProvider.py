@@ -11,7 +11,6 @@ class CryptographicServiceProvider():
     def __init__(self, epsilon_budget, generate_keys=False):
         self.privacy_engine = PrivacyEngine(epsilon_budget)
         self.key_manager = KeyManager(generate_keys)
-        self.public_key = self.key_manager.public_key
 
     def __str__(self):
         return "CryptographicServiceProvider" + str(
@@ -32,7 +31,7 @@ class CryptographicServiceProvider():
         return decrypted_data
 
     def lab_multiplication(self, intermediary, cipher1, cipher2):
-        public_key = self.public_key
+        public_key = self.key_manager.public_key
         private_key = self.key_manager.private_key
         decrypt_intermediary = private_key.decrypt(intermediary) + private_key.decrypt(
             cipher1.label_encrypted) * private_key.decrypt(cipher2.label_encrypted)
@@ -43,7 +42,7 @@ class CryptographicServiceProvider():
         return return_cipher
 
     def group_by_count_encoded(self, gbc_vector_masked, data_set_size):
-        public_key = self.public_key
+        public_key = self.key_manager.public_key
         private_key = self.key_manager.private_key
         gbc_vector_masked_decrypted = [private_key.lab_decrypt(value) for value in gbc_vector_masked]
         return_vector = []

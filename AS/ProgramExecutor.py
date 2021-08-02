@@ -3,17 +3,18 @@ import random
 import numpy as np
 
 class ProgramExecutor():
-    def __init__(self, encrypted_data=None):
+    def __init__(self, public_key, encrypted_data=None):
         self.encrypted_data = encrypted_data
+        self.public_key = public_key
     
-    def cross_product(self, public_key, attribute1, attribute2, CSP):
+    def cross_product(self, attribute1, attribute2, CSP):
         new_data_set = self.encrypted_data
         for i, element in enumerate(new_data_set):
             vector1 = element.pop(attribute1)
             vector2 = element.pop(attribute2 if attribute1 > attribute2 else attribute2 - 1)
             vector_new = []
             for l in range(len(vector1)*len(vector2)):
-                vector_new.append(public_key.general_lab_multiplication(vector1[math.floor(l/len(vector2))],vector2[l%len(vector2)]), CSP)
+                vector_new.append(self.public_key.general_lab_multiplication(vector1[math.floor(l/len(vector2))],vector2[l%len(vector2)]), CSP)
             element.append(vector_new)
         return new_data_set
 
@@ -24,7 +25,7 @@ class ProgramExecutor():
             # i.e passing [0,2] will do a projection onto the first and third attribute etc
         return new_data_set
 
-    def filter(self, public_key, predicate, CSP):#predicate inputed in double binary list i.e. [[0,1,0,1],[1,1,1,0],[1,1]]
+    def filter(self, predicate, CSP):#predicate inputed in double binary list i.e. [[0,1,0,1],[1,1,1,0],[1,1]]
         bit_vector = []    
         new_data_set = []
         for n, row in enumerate(self.encrypted_data):
@@ -38,7 +39,7 @@ class ProgramExecutor():
                             except UnboundLocalError:
                                 attribute_indicator = attribute[j]
                     try:
-                        row_indicator = public_key.general_lab_multiplication(row_indicator,attribute_indicator, CSP)
+                        row_indicator = self.public_key.general_lab_multiplication(row_indicator,attribute_indicator, CSP)
                     except UnboundLocalError:
                         row_indicator = attribute_indicator
                 else:
@@ -53,17 +54,18 @@ class ProgramExecutor():
                 for i, attribute in enumerate(row):
                     new_data_set[n].append([])
                     for j, value in enumerate(attribute):
-                        product = public_key.general_lab_multiplication(row_indicator,self.encrypted_data[n][i][j], CSP)
+                        product = self.public_key.general_lab_multiplication(row_indicator,self.encrypted_data[n][i][j], CSP)
                         new_data_set[n][i].append(product)
             else:
                 for j, value in enumerate(row):
-                    product = public_key.general_lab_multiplication(row_indicator,self.encrypted_data[n][j], CSP)
+                    product = self.public_key.general_lab_multiplication(row_indicator,self.encrypted_data[n][j], CSP)
                     new_data_set[n].append(product)
             bit_vector.append(row_indicator)
                 
         return new_data_set, bit_vector
     
     def count(self, bit_vector):
+
         for i, value in enumerate(bit_vector):
             try:
                 total = value._lab_add_encrypted(total)
@@ -71,17 +73,17 @@ class ProgramExecutor():
                 total = value
         return total
 
-    def group_by_count(self, public_key, attribute, CSP):
+    def group_by_count(self, attribute, CSP):
         return_vector = []
         new_data_set = self.project(self.encrypted_data, attribute, CSP)
         attribute_size =  len(self.encrypted_data[0][attribute])
         for value in range(attribute_size):
             predicate = [[0  if i != value else 1 for i in range(attribute_size)]]
-            blank, bit_vector = self.filter(public_key, new_data_set, predicate, CSP)
+            blank, bit_vector = self.filter(self.public_key, new_data_set, predicate, CSP)
             return_vector.append(self.count(bit_vector))
         return return_vector
     
-    def group_by_count_encoded(self, public_key, attribute, CSP):
+    def group_by_count_encoded(self, attribute, CSP):
         def rightRotate(lists, num):
             output_list = []
             print(list)
@@ -95,18 +97,18 @@ class ProgramExecutor():
                 output_list.append(lists[item])
 
             return output_list
-        gbc_vector = self.group_by_count(public_key, self.encrypted_data, attribute, CSP)
+        gbc_vector = self.group_by_count(self.public_key, self.encrypted_data, attribute, CSP)
         M = [random.randint(0,10**5) for n in range(len(gbc_vector))]
-        gbc_vector_masked = [public_key.lab_encrypt(M[i], self.gen_label(),self.local_gen(public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
+        gbc_vector_masked = [self.public_key.lab_encrypt(M[i], self.gen_label(),self.local_gen(self.public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(self.encrypted_data))
         return [rightRotate(return_vector_encrypted[i], M[i]) for i in range(len(return_vector_encrypted))]
                         
-    def local_gen(self, public_key):
+    def local_gen(self):
         seed = ''
         for _ in range(100):
             seed += str(random.randint(0,1))
         seed_encoded = int(seed,2)
-        seed_encrypted = public_key.encrypt(seed_encoded, None)
+        seed_encrypted = self.public_key.encrypt(seed_encoded, None)
         return bin(seed_encoded), seed_encrypted
 
     def gen_label(self):
