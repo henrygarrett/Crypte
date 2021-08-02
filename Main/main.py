@@ -16,7 +16,6 @@ from CSP.CryptographicServiceProvider import CryptographicServiceProvider
 from AS.AnalyticsServer import AnalyticsServer
 
 def init_crypte(ask_prompt=True, verbose=True):
-    AS = AnalyticsServer()
 
     if (not ask_prompt) or (input('Replace budget, keys and data? y/n\n') != 'y'):
         generate_keys = False
@@ -30,14 +29,13 @@ def init_crypte(ask_prompt=True, verbose=True):
         generate_keys = True
 
     CSP = CryptographicServiceProvider(privacy_budget, generate_keys)
-
-    public_key = CSP.key_manager.public_key  # Obtain public key
+    AS = AnalyticsServer(CSP.key_manager.public_key)
 
     if generate_keys:
         # Creates then encodes then encrypts the data
         AS.aggregator.get_data()
         AS.aggregator.encode_data()
-        AS.aggregator.encrypt_data(public_key)
+        AS.aggregator.encrypt_data()
     else:
         # Retrieves encrypted data and raw data
         with open('..' + os.sep + 'Main' + os.sep + 'data_set.txt', 'r') as data_file:
@@ -56,7 +54,6 @@ def init_crypte(ask_prompt=True, verbose=True):
 # Initialise Crypte system
 
 AS, CSP = init_crypte(ask_prompt=False)
-AS.init_executor() # Once encrypted data is calculated/aggregated we update the ProgramExecutor instance to store a copy of the encrypted data to work on
 
 # Raw data for the tests
 TEST_DATA = [['25', 'spain', 'yes'], ['38', 'france', 'no'], ['39', 'italy', 'no'], ['29', 'italy', 'yes'], ['22', 'italy', 'yes']]
@@ -82,9 +79,8 @@ def test_encode_decode(verbose=True):
 def test_project(verbose=True):
 
     # Compute test query
-    query_result = CSP.decrypt_data(AS.program_executor.project([0,2]))
-    query_result = AS.aggregator.decode_data(query_result, attribute_nums=[0,2])
-    query_result = list(map(lambda x: [str(val) for val in x], query_result)) # Raw data are strings
+    query_result = AS.aggregator.decode_data(CSP.decrypt_data(AS.program_executor.project(AS.aggregator.data_encrypted, [0,2])), attribute_nums=[0,2]) # project, decrypt, decode
+    query_result = list(map(lambda x: [str(val) for val in x], query_result)) # Raw data is strings so this is just to make the assert comparison work at the end
 
     # Get the actual filtering answer
     data = AS.aggregator.data.copy()
@@ -105,12 +101,23 @@ def test_project(verbose=True):
 
     assert filtered_raw_data == query_result
 
+def test_count(verbose=True):
+    bit_vector = [1,0,0,1,1]
+
+    # Encrypted bit_vector
+    bit_vector_enc = [CSP.key_manager.public_key.lab_encrypt(val, AS.aggregator.gen_label(), AS.aggregator.local_gen(CSP.key_manager.public_key)[0]) for val in bit_vector]
+
+    query_result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count(bit_vector_enc)) # Count the bit_vector, decrypt
+
+    assert query_result == 3
+
 # Tests the Filter operator works correctly
 def test_filter():
-    new_data, bit_vector = AS.program_executor.filter(CSP.key_manager.public_key, [[1,1,1,1],[1,1,1,1],[1,0]], CSP)
-    print(new_data)
+    bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1,1,1,1,1],[1,0]], CSP)
+    print("Decrypted filter:", CSP.decrypt_bit_vector(bit_vector))
 
 # test_encode_decode()
-test_project()
-# test_filter()
+# test_project()
+# test_count()
 
+test_filter()

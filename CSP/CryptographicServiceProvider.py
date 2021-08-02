@@ -30,6 +30,9 @@ class CryptographicServiceProvider():
 
         return decrypted_data
 
+    def decrypt_bit_vector(self, bit_vector):
+        return [self.key_manager.private_key.lab_decrypt(enc) for enc in bit_vector]
+
     def lab_multiplication(self, intermediary, cipher1, cipher2):
         public_key = self.key_manager.public_key
         private_key = self.key_manager.private_key
