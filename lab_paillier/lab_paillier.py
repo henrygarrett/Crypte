@@ -70,6 +70,7 @@ class LabPaillierPublicKey(PaillierPublicKey):
 class LabPaillierPrivateKey(PaillierPrivateKey):
     def lab_decrypt(self, encrypted_number):
         return encrypted_number.message_obfuscated - self.decrypt(encrypted_number.label_encrypted)
+
     def lab_multiply_decrypt(self, cipher1, cipher2, product_label):
         product = self.decrypt(product_label) + self.decrypt(cipher1.label_encrypted) * self.decrypt(cipher2.label_encrypted)
         return product
@@ -77,9 +78,10 @@ class LabPaillierPrivateKey(PaillierPrivateKey):
 
 class LabEncryptedNumber(EncryptedNumber):
     def __init__(self, public_key, message_obfuscated, label_encrypted, ciphertext = None, exponent=0):
-        super().__init__(public_key, exponent=0, ciphertext = None)
+        super().__init__(public_key, exponent=0, ciphertext=None)
         self.message_obfuscated = message_obfuscated
         self.label_encrypted = label_encrypted
+
     def _lab_add_encrypted(self, other):
         if self.public_key != other.public_key:
             raise ValueError("Attempted to add numbers encrypted against "
