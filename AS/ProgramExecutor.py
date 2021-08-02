@@ -32,7 +32,7 @@ class ProgramExecutor():
         if predicate_features is None:
             predicate_features = range(0, self.num_attr) # If none assume the predicate is over all attributes
         if data_features is None:
-            data_features = predicate_features # If none assume the encrypted data has all attributes (i.e has not been projected)
+            data_features = range(0, self.num_attr) # If none assume the encrypted data has all attributes (i.e has not been projected)
 
         bit_vector = []
         for row in encrypted_data:
@@ -60,7 +60,7 @@ class ProgramExecutor():
         attribute_size =  len(encrypted_data[0][attribute])
         for value in range(attribute_size):
             predicate = [[0  if i != value else 1 for i in range(attribute_size)]]
-            blank, bit_vector = self.filter(new_data_set, predicate, CSP)
+            blank, bit_vector = self.filter(new_data_set, predicate, CSP, predicate_features=[attribute]) # predicate_features=[attribute] tells filter to only filter on one attribute (the one provided to GBC)
             return_vector.append(self.count(bit_vector))
         return return_vector
     
