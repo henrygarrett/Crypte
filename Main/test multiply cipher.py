@@ -18,7 +18,7 @@ print('n^2: ' + str(pk.nsquare))
 
 
 
-part1 = pk.encrypt(a1*a2)
+part1 = EncryptedNumber(pk, (pk.n * a1*a2 + 1) % pk.nsquare)
 print(sk.decrypt(part1) == a1*a2)
 
 part2 = EncryptedNumber(pk,(b1._raw_mul(a2)))
