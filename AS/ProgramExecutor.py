@@ -40,7 +40,7 @@ class ProgramExecutor():
             row_indicator = self.public_key.lab_encrypt(1)
             for j, predicate in enumerate(predicates):
                 attribute_indicator = self.public_key.lab_encrypt(0)
-                attr_val = row[data_features.index(predicate_features[j])]
+                attr_val = row[data_features.index(predicate_features[j])] if len(predicates) != 1 else row
                 for k,index in enumerate(predicate):
                     if index == 1:
                         attribute_indicator = attribute_indicator._lab_add_encrypted(attr_val[k])
@@ -62,7 +62,7 @@ class ProgramExecutor():
         attribute_size =  len(encrypted_data[0][attribute])
         for value in range(attribute_size):
             predicate = [[0  if i != value else 1 for i in range(attribute_size)]]
-            blank, bit_vector = self.filter(new_data_set, predicate, CSP, predicate_features=[attribute]) # predicate_features=[attribute] tells filter to only filter on one attribute (the one provided to GBC)
+            bit_vector = self.filter(new_data_set, predicate, CSP, predicate_features=[attribute], data_features=[attribute]) # predicate_features=[attribute] tells filter to only filter on one attribute (the one provided to GBC)
             return_vector.append(self.count(bit_vector))
         return return_vector
     

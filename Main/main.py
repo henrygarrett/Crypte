@@ -159,8 +159,7 @@ def test_count(verbose=True):
 
 # Tests the Filter operator works correctly
 def test_filter(verbose=True):
-    bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted,
-                                            [list(np.ones(21, dtype="uint8")), [1, 1, 1, 1, 1], [1, 0]], CSP)
+    bit_vector = AS.program_executor.filter(AS.program_executor.project(AS.aggregator.data_encrypted, 2), [[1,0]], CSP, predicate_features=[2], data_features=[2])
     decrypted_filter = CSP.decrypt_bit_vector(bit_vector)
     if verbose:
         print("Encoded Raw Data:", AS.aggregator.data_encoded)
@@ -181,6 +180,14 @@ def test_cross_product(verbose=True):
         true_value[i].append([1 if i == index else 0 for i in range(length)])
     assert true_value == result
    
+def test_group_by_count(verbose=True):
+    result = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
+    result = [CSP.key_manager.private_key.lab_decrypt(value) for value in result]
+    true_value = [3,2]
+    print(result)
+    assert result == true_value
+
+
 
 
 # Basic encryption/encoding tests
@@ -200,3 +207,4 @@ def test_cross_product(verbose=True):
 # test_count()
 #test_filter()
 #test_cross_product()
+test_group_by_count()
