@@ -21,9 +21,10 @@ class ProgramExecutor():
         return new_data_set
 
     def project(self, encrypted_data, attributes_chosen):
+        attributes_chosen = [attributes_chosen] if type(attributes_chosen) == int else attributes_chosen
         new_data_set = []
         for element in encrypted_data:
-            new_data_set.append(list(np.array(element)[attributes_chosen])) # By making it a numpy array we can pass lists of indexes as attributes_chosen
+            new_data_set.append(list(np.array(element, dtype="object", ndmin=1)[attributes_chosen])) # By making it a numpy array we can pass lists of indexes as attributes_chosen
             # i.e passing attributes_chosen=[0,2] will do a projection onto the first and third attribute etc
         return new_data_set
 
@@ -40,7 +41,7 @@ class ProgramExecutor():
             row_indicator = self.public_key.lab_encrypt(1)
             for j, predicate in enumerate(predicates):
                 attribute_indicator = self.public_key.lab_encrypt(0)
-                attr_val = row[data_features.index(predicate_features[j])] if len(predicates) != 1 else row
+                attr_val = row[data_features.index(predicate_features[j])]
                 for k,index in enumerate(predicate):
                     if index == 1:
                         attribute_indicator = attribute_indicator._lab_add_encrypted(attr_val[k])
@@ -85,4 +86,3 @@ class ProgramExecutor():
         gbc_vector_masked = [self.public_key.lab_encrypt(M[i])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(encrypted_data))
         return [rightRotate(return_vector_encrypted[i], M[i]) for i in range(len(return_vector_encrypted))]
-                        

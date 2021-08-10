@@ -76,7 +76,7 @@ def test_encode_decode(verbose=True):
         print("\n")
 
     assert decoded_data == raw_data
-
+    return True
 
 def test_encrypt_decrypt(verbose=True):
     decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10)))
@@ -88,6 +88,7 @@ def test_encrypt_decrypt(verbose=True):
         print("\n")
 
     assert decrypted_data == raw_data
+    return True
 
 
 def test_encrypted_data(verbose=True):
@@ -96,6 +97,7 @@ def test_encrypted_data(verbose=True):
         print(AS.aggregator.data_encoded)
         print(decrypted_data)
     assert decrypted_data == AS.aggregator.data_encoded
+    return True
 
 
 def test_multiply_ciphers(CSP):
@@ -104,6 +106,7 @@ def test_multiply_ciphers(CSP):
     result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
     print(result)
     assert result == 47846845 * 45879457845
+    return True
 
 
 # Tests general LabHE multiplication
@@ -116,11 +119,16 @@ def test_HE_mult():
     print("Actual Answer:", 47846845 * 45879457845)
     print("Decrypted Result:", decrypted_result)
     assert decrypted_result == 47846845 * 45879457845
+    return True
 
 
 # Tests the Project Operator works correctly
 def test_project(verbose=True):
-    # Compute test query
+
+    # Compute test query for projection of 1 attribute
+    one_attribute_test = np.array(AS.program_executor.project(AS.aggregator.data_encrypted, 0), dtype="object")
+
+    # Compute test query for projection of > 1 attributes
     query_result = AS.aggregator.decode_data(
         CSP.decrypt_data(AS.program_executor.project(AS.aggregator.data_encrypted, [0, 2])),
         attribute_nums=[0, 2])  # project, decrypt, decode
@@ -128,22 +136,25 @@ def test_project(verbose=True):
 
     # Get the actual filtering answer
     data = AS.aggregator.data.copy()
-    filtered_raw_data = []
+    projected_raw_data = []
 
     for row in data:
         filtered_row = []
         for i, val in enumerate(row):
             if i in [0, 2]:
                 filtered_row.append(val)
-        filtered_raw_data.append(filtered_row)
+        projected_raw_data.append(filtered_row)
 
     if verbose:
-        print("True Filtered Data:", query_result)
-        print("Query Result:", filtered_raw_data)
-        print("Test Result:", str(filtered_raw_data == query_result))
+        print("True Projected Data:", query_result)
+        print("Query Result:", projected_raw_data)
+        print("Test Result:", str(projected_raw_data == query_result))
+        print("One attribute shape:", one_attribute_test.shape)
         print("\n")
 
-    assert filtered_raw_data == query_result
+    assert projected_raw_data == query_result
+    assert one_attribute_test.shape == (5,1,21)
+    return True
 
 
 def test_count(verbose=True):
@@ -154,19 +165,36 @@ def test_count(verbose=True):
 
     query_result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count(bit_vector_enc)) # Count the bit_vector, decrypt
 
+    if verbose:
+        print("Query Result:", query_result)
+        print("Actual answer:", 3)
+        print("\n")
+
     assert query_result == 3
+    return True
 
 
 # Tests the Filter operator works correctly
 def test_filter(verbose=True):
-    bit_vector = AS.program_executor.filter(AS.program_executor.project(AS.aggregator.data_encrypted, 2), [[1,0]], CSP, predicate_features=[2], data_features=[2])
-    decrypted_filter = CSP.decrypt_bit_vector(bit_vector)
+    bit_vector1 = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1, 1, 1, 1, 1], [1, 0]], CSP) # All attributes passed, all attributes predicate
+    bit_vector2 = AS.program_executor.filter(AS.aggregator.data_encrypted, [[1,0]], CSP, predicate_features=[2]) # All attributes passed, single attribute predicate
+    bit_vector3 = AS.program_executor.filter(AS.program_executor.project(AS.aggregator.data_encrypted, 2), [[1,0]], CSP, predicate_features=[2], data_features=[2]) # Single attribute data, single attribute predicate
+
+    decrypted_filter1 = CSP.decrypt_bit_vector(bit_vector1)
+    decrypted_filter2 = CSP.decrypt_bit_vector(bit_vector2)
+    decrypted_filter3 = CSP.decrypt_bit_vector(bit_vector3)
+
     if verbose:
-        print("Encoded Raw Data:", AS.aggregator.data_encoded)
-        print("Decrypted filter:", decrypted_filter)
+        print("Full Data Test - Encoded Raw Data:", AS.aggregator.data_encoded)
+        print("All attributes, All predicates Test:", decrypted_filter1)
+        print("All attributes, Single Predicate Test:", decrypted_filter2)
+        print("Single Attribute, Single Predicate Test:", decrypted_filter3)
+        print("\n")
 
-    assert decrypted_filter == [1,0,0,1,1]
-
+    assert decrypted_filter1 == [1,0,0,1,1]
+    assert decrypted_filter2 == [1,0,0,1,1]
+    assert decrypted_filter3 == [1,0,0,1,1]
+    return True
 
 def test_cross_product(verbose=True):
     result = AS.program_executor.cross_product(AS.aggregator.data_encrypted, 1, 2, CSP)
@@ -179,32 +207,37 @@ def test_cross_product(verbose=True):
         true_value[i].append(AS.aggregator.data_encoded[i][0])
         true_value[i].append([1 if i == index else 0 for i in range(length)])
     assert true_value == result
+    return True
    
 def test_group_by_count(verbose=True):
     result = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     result = [CSP.key_manager.private_key.lab_decrypt(value) for value in result]
     true_value = [3,2]
-    print(result)
+
+    if verbose:
+        print("Query Result:", result)
+        print("True Value:", true_value)
+
     assert result == true_value
+    return True
 
 
 
-
-# Basic encryption/encoding tests
+# --- Basic encryption/encoding tests ---
 
 # test_encrypt_decrypt()
 # test_encode_decode()
 # test_encrypted_data()
 
-# Multiplication tests
+# --- Multiplication tests ---
 
 # test_multiply_ciphers(CSP)
 # test_HE_mult()
 
-# Operator tests
+# --- Operator tests ---
 
 # test_project()
 # test_count()
-#test_filter()
-#test_cross_product()
-test_group_by_count()
+# test_filter()
+test_cross_product()
+# test_group_by_count()
