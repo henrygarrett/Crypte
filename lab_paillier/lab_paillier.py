@@ -46,21 +46,22 @@ def local_gen(self, public_key):
     return bin(seed_encoded), seed_encrypted
 class LabPaillierPublicKey(PaillierPublicKey):
     def lab_encrypt(self, message_encoded, label, seed):
-        mask = int(seed, 2)*label*random.randint(0,10**40)
+        mask = int(seed, 2)*label*10                    #changed from random.randint(0,10**40)
         message_obfuscated = int(message_encoded) + mask
         label_encrypted = self.encrypt(mask)
         encrypted_number = LabEncryptedNumber(self, message_obfuscated, label_encrypted)
         return encrypted_number
 
-    def multiply_ciphers(self, cipher1, cipher2):
-        part1 = self.encrypt(cipher1.message_obfuscated * cipher2.message_obfuscated)
-        part2 = cipher2.label_encrypted * cipher1.message_obfuscated
-        part3 = cipher1.label_encrypted * cipher2.message_obfuscated
-        product_label = part1 + part2 + part3
+    def multiply_ciphers(self, cipher1, cipher2, CSP):
+        part1 = self.encrypt(cipher1.message_obfuscated*cipher2.message_obfuscated)
+        part2 = EncryptedNumber(self, cipher2.label_encrypted._raw_mul(cipher1.message_obfuscated))
+        part3 = EncryptedNumber(self, cipher1.label_encrypted._raw_mul(cipher2.message_obfuscated))
+        product_label = part1._add_encrypted(part2)._add_encrypted(part3)
         return product_label
 
     def general_lab_multiplication(self, cipher1,cipher2, CSP):
         mask = random.randint(0,10**40)
+        mask = 10# remove later
         intermediary = self.encrypt(mask)._add_encrypted(self.multiply_ciphers(cipher1,cipher2))
         return_cipher = CSP.lab_multiplication(intermediary, cipher1, cipher2)
         new_message_obfuscated = return_cipher.message_obfuscated - mask
@@ -97,10 +98,6 @@ class LabEncryptedNumber(EncryptedNumber):
 
     def _lab_raw_add(self, e_a, e_b):
         return e_a * e_b % self.public_key.nsquare
-        
-        
-        
-
 
 
 def generate_lab_paillier_keypair(private_keyring=None, n_length=DEFAULT_KEYSIZE):
@@ -547,7 +544,7 @@ class EncryptedNumber(object):
         self.__is_obfuscated = False
         if isinstance(self.ciphertext, EncryptedNumber):
             raise TypeError('ciphertext should be an integer')
-        if not isinstance(self.public_key, PaillierPublicKey):
+        if not isinstance(self.public_key, LabPaillierPublicKey):
             raise TypeError('public_key should be a PaillierPublicKey')
 
     def __add__(self, other):

@@ -62,7 +62,6 @@ TEST_DATA = [['25', 'spain', 'yes'], ['38', 'france', 'no'], ['39', 'italy', 'no
 
 # Tests that the aggregator correctly encodes and decodes data to and from one-hot vector form
 def test_encode_decode(verbose=True):
-    encoded_data = AS.aggregator.data_encoded[0]
     decoded_data = AS.aggregator.decode_row(AS.aggregator.data_encoded[0])
     decoded_data = [str(val) for val in decoded_data]
     raw_data = [str(val) for val in AS.aggregator.data[0]]
@@ -75,16 +74,34 @@ def test_encode_decode(verbose=True):
 
     assert decoded_data == raw_data
 
+def test_encrypt_decrypt(verbose=True):
+    decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10,47, '10101010')))
+    raw_data = 10
+    if verbose:
+        print("Decrypted Data:" + str(decrypted_data))
+        print("Raw Data:" + str(raw_data))
+        print("Test Result:", str(decrypted_data == raw_data))
+        print("\n")
 
+    assert decrypted_data == raw_data
+def test_multiply_ciphers(CSP):
+    cipher1 = CSP.key_manager.public_key.lab_encrypt(3, 2, '1')
+    print(CSP.key_manager.private_key.lab_decrypt(cipher1))
+    cipher2 = CSP.key_manager.public_key.lab_encrypt(4, 5, '10')
+    print(CSP.key_manager.private_key.lab_decrypt(cipher2))
+    result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
+    print(result)
+    assert result == 12
 # Tests general LabHE multiplication
 def test_HE_mult():
-    ciphertext1 = CSP.key_manager.public_key.lab_encrypt(3, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
-    ciphertext2 = CSP.key_manager.public_key.lab_encrypt(4, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
-
+    ciphertext1 = CSP.key_manager.public_key.lab_encrypt(3, 25, '101')
+    ciphertext2 = CSP.key_manager.public_key.lab_encrypt(4, 27, '110')
+    
     result = CSP.key_manager.public_key.general_lab_multiplication(ciphertext1, ciphertext2, CSP)
     decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
     print(decrypted_result)
     assert decrypted_result == 12
+    
 
 # Tests the Project Operator works correctly
 def test_project(verbose=True):
@@ -127,8 +144,10 @@ def test_filter():
     bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1,1,1,1,1],[1,0]], CSP)
     print("Decrypted filter:", CSP.decrypt_bit_vector(bit_vector))
 
-# test_encode_decode()
-test_HE_mult()
+test_multiply_ciphers(CSP)
+#test_encrypt_decrypt()
+#test_encode_decode()
+#test_HE_mult()
 # test_project()
 # test_count()
 # test_filter()
