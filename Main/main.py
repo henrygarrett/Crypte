@@ -75,6 +75,8 @@ def test_encode_decode(verbose=True):
     assert decoded_data == raw_data
 
 def test_encrypt_decrypt(verbose=True):
+
+
     decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10,47, '10101010')))
     raw_data = 10
     if verbose:
@@ -100,6 +102,7 @@ def test_HE_mult():
     decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
     print(decrypted_result)
     assert decrypted_result == 47846845 * 45879457845
+    print(decrypted_result == 47846845 * 45879457845)
     
 
 # Tests the Project Operator works correctly
@@ -143,10 +146,10 @@ def test_filter():
     bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1,1,1,1,1],[1,0]], CSP)
     print("Decrypted filter:", CSP.decrypt_bit_vector(bit_vector))
 
-test_multiply_ciphers(CSP)
+#test_multiply_ciphers(CSP)
 #test_encrypt_decrypt()
 #test_encode_decode()
-#test_HE_mult()
+test_HE_mult()
 # test_project()
 # test_count()
 # test_filter()

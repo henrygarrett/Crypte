@@ -39,7 +39,7 @@ class CryptographicServiceProvider():
         decrypt_intermediary = private_key.decrypt(intermediary) + private_key.decrypt(
             cipher1.label_encrypted) * private_key.decrypt(cipher2.label_encrypted)
         return_label = random.randint(0, 10 ** 40)
-        return_intermediary = decrypt_intermediary - return_label
+        return_intermediary = decrypt_intermediary + return_label
         return_label_encrypted = public_key.encrypt(return_label)
         return_cipher = LabEncryptedNumber(public_key, return_intermediary, return_label_encrypted)
         return return_cipher
