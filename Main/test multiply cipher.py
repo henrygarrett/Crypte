@@ -7,8 +7,9 @@ Created on Tue Aug 10 10:32:27 2021
 from phe import PaillierPublicKey, EncryptedNumber, PaillierPrivateKey
 pk = PaillierPublicKey(227*97)
 sk = PaillierPrivateKey(pk, 227, 97)
+#3 is the first message with 20 as it's fixed mask(for now)
 a1, b1 = 3 + 20, EncryptedNumber(pk, (pk.n * 20 + 1) % pk.nsquare)
-
+#4 is the first message with 100 as it's fixed mask(for now)
 a2, b2 = 4 + 100, EncryptedNumber(pk, (pk.n * 100 + 1) % pk.nsquare)
 print('n: ' + str(pk.n))
 print('n^2: ' + str(pk.nsquare))
