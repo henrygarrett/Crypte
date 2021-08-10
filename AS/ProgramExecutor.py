@@ -1,6 +1,7 @@
 import math
 import random
 import numpy as np
+import copy
 
 class ProgramExecutor():
     def __init__(self, public_key, num_rows, num_attr):
@@ -37,10 +38,13 @@ class ProgramExecutor():
             data_features = range(0, self.num_attr) # If none assume the encrypted data has all attributes (i.e has not been projected)
 
         bit_vector = []
+        enc_one = self.public_key.lab_encrypt(1)
+        enc_zero = self.public_key.lab_encrypt(0)
+
         for i, row in enumerate(encrypted_data):
-            row_indicator = self.public_key.lab_encrypt(1)
+            row_indicator = copy.deepcopy(enc_one)
             for j, predicate in enumerate(predicates):
-                attribute_indicator = self.public_key.lab_encrypt(0)
+                attribute_indicator = copy.deepcopy(enc_zero)
                 attr_val = row[data_features.index(predicate_features[j])]
                 for k,index in enumerate(predicate):
                     if index == 1:
