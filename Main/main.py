@@ -79,8 +79,6 @@ def test_encode_decode(verbose=True):
 
 
 def test_encrypt_decrypt(verbose=True):
-
-
     decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10)))
     raw_data = 10
     if verbose:
@@ -170,6 +168,21 @@ def test_filter(verbose=True):
 
     assert decrypted_filter == [1,0,0,1,1]
 
+
+def test_cross_product(verbose=True):
+    result = AS.program_executor.cross_product(AS.aggregator.data_encrypted, 1, 2, CSP)
+    result = [[[CSP.key_manager.private_key.lab_decrypt(value) for value in attribute]for attribute in row]for row in result]
+    true_value = []
+    for i in range(len(AS.aggregator.data_encoded)):
+        true_value.append([])
+        index = AS.aggregator.data_encoded[i][1].index(1)*len(AS.aggregator.data_encoded[i][2]) + AS.aggregator.data_encoded[i][2].index(1)
+        length = len(AS.aggregator.data_encoded[i][1])*len(AS.aggregator.data_encoded[i][2])
+        true_value[i].append(AS.aggregator.data_encoded[i][0])
+        true_value[i].append([1 if i == index else 0 for i in range(length)])
+    assert true_value == result
+   
+
+
 # Basic encryption/encoding tests
 
 # test_encrypt_decrypt()
@@ -185,4 +198,5 @@ def test_filter(verbose=True):
 
 # test_project()
 # test_count()
-test_filter()
+#test_filter()
+#test_cross_product()

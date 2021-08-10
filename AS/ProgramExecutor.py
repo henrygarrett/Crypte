@@ -15,8 +15,8 @@ class ProgramExecutor():
             vector1 = element.pop(attribute1)
             vector2 = element.pop(attribute2 if attribute1 > attribute2 else attribute2 - 1)
             vector_new = []
-            for l in range(len(vector1)*len(vector2)):
-                vector_new.append(self.public_key.general_lab_multiplication(vector1[math.floor(l/len(vector2))],vector2[l%len(vector2)]), CSP)
+            for i in range(len(vector1)*len(vector2)):
+                vector_new.append(self.public_key.general_lab_multiplication(vector1[math.floor(i/len(vector2))], vector2[i%len(vector2)], CSP))
             element.append(vector_new)
         return new_data_set
 
