@@ -57,20 +57,6 @@ class CryptographicServiceProvider():
                 else:
                     return_vector[i].append(1)
         return_vector_encrypted = [
-            [public_key.lab_encrypt(bit, self.gen_label(), self.local_gen(public_key)[0]) for bit in value] for value in
+            [public_key.lab_encrypt(bit) for bit in value] for value in
             return_vector]
         return return_vector_encrypted
-
-    def local_gen(self, public_key):
-        seed = ''
-        for _ in range(100):
-            seed += str(random.randint(0, 1))
-        seed_encoded = int(seed, 2)
-        seed_encrypted = public_key.encrypt(seed_encoded, None)
-        return bin(seed_encoded), seed_encrypted
-
-    def gen_label(self):
-        label = str(random.randint(1, 9))
-        for _ in range(29):
-            label += str(random.randint(0, 9))
-        return int(label)

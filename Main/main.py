@@ -77,7 +77,7 @@ def test_encode_decode(verbose=True):
 def test_encrypt_decrypt(verbose=True):
 
 
-    decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10,47, '10101010')))
+    decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10)))
     raw_data = 10
     if verbose:
         print("Decrypted Data:" + str(decrypted_data))
@@ -87,16 +87,16 @@ def test_encrypt_decrypt(verbose=True):
 
     assert decrypted_data == raw_data
 def test_multiply_ciphers(CSP):
-    cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
-    cipher2 = CSP.key_manager.public_key.lab_encrypt(45879457845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
+    cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845)
+    cipher2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
     result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
     print(result)
     assert result == 47846845 * 45879457845
     print(result == 47846845 * 45879457845)
 # Tests general LabHE multiplication
 def test_HE_mult():
-    ciphertext1 = CSP.key_manager.public_key.lab_encrypt(47846845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
-    ciphertext2 = CSP.key_manager.public_key.lab_encrypt(45879457845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
+    ciphertext1 = CSP.key_manager.public_key.lab_encrypt(47846845)
+    ciphertext2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
     
     result = CSP.key_manager.public_key.general_lab_multiplication(ciphertext1, ciphertext2, CSP)
     decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
@@ -135,7 +135,7 @@ def test_count(verbose=True):
     bit_vector = [1,0,0,1,1]
 
     # Encrypted bit_vector
-    bit_vector_enc = [CSP.key_manager.public_key.lab_encrypt(val, AS.aggregator.gen_label(), AS.aggregator.local_gen(CSP.key_manager.public_key)[0]) for val in bit_vector]
+    bit_vector_enc = [CSP.key_manager.public_key.lab_encrypt(val) for val in bit_vector]
 
     query_result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count(bit_vector_enc)) # Count the bit_vector, decrypt
 
@@ -143,13 +143,13 @@ def test_count(verbose=True):
 
 # Tests the Filter operator works correctly
 def test_filter():
-    bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1,1,1,1,1],[1,0]], CSP)
+    bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1,1,1,1,1],[1,1]], CSP)
     print("Decrypted filter:", CSP.decrypt_bit_vector(bit_vector))
 
 #test_multiply_ciphers(CSP)
 #test_encrypt_decrypt()
 #test_encode_decode()
-test_HE_mult()
-# test_project()
-# test_count()
-# test_filter()
+#test_HE_mult()
+#test_project()
+test_count()
+#test_filter()

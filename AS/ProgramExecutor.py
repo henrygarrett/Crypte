@@ -36,9 +36,9 @@ class ProgramExecutor():
 
         bit_vector = []
         for row in encrypted_data:
-            row_indicator = self.public_key.lab_encrypt(1, self.gen_label(), self.local_gen()[0])
+            row_indicator = self.public_key.lab_encrypt(1)
             for i, predicate in enumerate(predicates):
-                attribute_indicator = self.public_key.lab_encrypt(0, self.gen_label(), self.local_gen()[0])
+                attribute_indicator = self.public_key.lab_encrypt(0)
                 attr_val = row[data_features.index(predicate_features[i])]
                 for index in predicate:
                     if index == 1:
@@ -49,7 +49,7 @@ class ProgramExecutor():
         return bit_vector
     
     def count(self, bit_vector):
-        total = self.public_key.lab_encrypt(0, self.gen_label(), self.local_gen()[0])
+        total = self.public_key.lab_encrypt(0)
         for i, value in enumerate(bit_vector):
             total = value._lab_add_encrypted(total)
         return total
@@ -80,20 +80,7 @@ class ProgramExecutor():
             return output_list
         gbc_vector = self.group_by_count(encrypted_data, attribute, CSP)
         M = [random.randint(0,10**5) for n in range(len(gbc_vector))]
-        gbc_vector_masked = [self.public_key.lab_encrypt(M[i], self.gen_label(),self.local_gen(self.public_key)[0])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
+        gbc_vector_masked = [self.public_key.lab_encrypt(M[i])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(encrypted_data))
         return [rightRotate(return_vector_encrypted[i], M[i]) for i in range(len(return_vector_encrypted))]
                         
-    def local_gen(self):
-        seed = ''
-        for _ in range(100):
-            seed += str(random.randint(0,1))
-        seed_encoded = int(seed,2)
-        seed_encrypted = self.public_key.encrypt(seed_encoded, None)
-        return bin(seed_encoded), seed_encrypted
-
-    def gen_label(self):
-        label = str(random.randint(1,9))
-        for _ in range(29):
-            label += str(random.randint(0,9))
-        return int(label)

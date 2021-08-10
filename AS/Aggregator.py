@@ -86,10 +86,7 @@ class Aggregator():
             return None
         data_list = []
         for data in self.data_encoded:
-            seed = self.local_gen()[0]
-            label = self.gen_label()
-            data_encrypted = [[self.public_key.lab_encrypt(value, label, seed)
-                               for value in attribute] for attribute in data]
+            data_encrypted = [[self.public_key.lab_encrypt(value) for value in attribute] for attribute in data]
             data_list.append(data_encrypted)
         with open('encrypted_data', 'wb') as data_file:
             pickle.dump(data_list, data_file)
@@ -110,17 +107,3 @@ class Aggregator():
         if return_value:
             return data_set
         return None
-
-    def local_gen(self, public_key):
-        seed = ''
-        for _ in range(100):
-            seed += str(random.randint(0,1))
-        seed_encoded = int(seed,2)
-        seed_encrypted = self.public_key.encrypt(seed_encoded, None)
-        return bin(seed_encoded), seed_encrypted
-
-    def gen_label(self):
-        label = str(random.randint(1,9))
-        for _ in range(29):
-            label += str(random.randint(0,9))
-        return int(label)
