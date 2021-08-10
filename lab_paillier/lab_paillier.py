@@ -19,7 +19,7 @@
 
 """Paillier encryption library for partially homomorphic encryption."""
 import random
-from phe import PaillierPublicKey, EncryptedNumber, PaillierPrivateKey
+from phe import paillier
 from pathlib import Path
 path = str(Path.cwd().parents[2])
 try:
@@ -44,40 +44,39 @@ def local_gen(self, public_key):
     seed_encoded = int(seed,2)
     seed_encrypted = public_key.encrypt(seed_encoded, None)
     return bin(seed_encoded), seed_encrypted
-class LabPaillierPublicKey(PaillierPublicKey):
+class LabPaillierPublicKey(paillier.PaillierPublicKey):
     def lab_encrypt(self, message_encoded, label, seed):
-        mask = int(seed, 2)*label*10                    #changed from random.randint(0,10**40)
+        mask = int(seed, 2)*label*random.randint(0,10**40)
         message_obfuscated = int(message_encoded) + mask
         label_encrypted = self.encrypt(mask)
         encrypted_number = LabEncryptedNumber(self, message_obfuscated, label_encrypted)
         return encrypted_number
 
     def multiply_ciphers(self, cipher1, cipher2, CSP):
-        part1 = self.encrypt(cipher1.message_obfuscated*cipher2.message_obfuscated)
-        part2 = EncryptedNumber(self, cipher2.label_encrypted._raw_mul(cipher1.message_obfuscated))
-        part3 = EncryptedNumber(self, cipher1.label_encrypted._raw_mul(cipher2.message_obfuscated))
-        product_label = part1._add_encrypted(part2)._add_encrypted(part3)
+        part1 = paillier.EncryptedNumber(self, self.raw_encrypt(cipher1.message_obfuscated*cipher2.message_obfuscated))
+        part2 = paillier.EncryptedNumber(self, -1*cipher2.label_encrypted._raw_mul(cipher1.message_obfuscated))
+        part3 = paillier.EncryptedNumber(self, -1*cipher1.label_encrypted._raw_mul(cipher2.message_obfuscated))
+        product_label = part1 - part2 - part3
         return product_label
 
     def general_lab_multiplication(self, cipher1,cipher2, CSP):
         mask = random.randint(0,10**40)
-        mask = 10# remove later
-        intermediary = self.encrypt(mask)._add_encrypted(self.multiply_ciphers(cipher1,cipher2))
+        intermediary = self.encrypt(mask)._add_encrypted(self.multiply_ciphers(cipher1,cipher2, CSP))
         return_cipher = CSP.lab_multiplication(intermediary, cipher1, cipher2)
         new_message_obfuscated = return_cipher.message_obfuscated - mask
         return LabEncryptedNumber(self, new_message_obfuscated,return_cipher.label_encrypted)
    
     
-class LabPaillierPrivateKey(PaillierPrivateKey):
+class LabPaillierPrivateKey(paillier.PaillierPrivateKey):
     def lab_decrypt(self, encrypted_number):
         return encrypted_number.message_obfuscated - self.decrypt(encrypted_number.label_encrypted)
 
     def lab_multiply_decrypt(self, cipher1, cipher2, product_label):
-        product = self.decrypt(product_label) + self.decrypt(cipher1.label_encrypted) * self.decrypt(cipher2.label_encrypted)
+        product = self.decrypt(product_label) + (self.decrypt(cipher1.label_encrypted) * self.decrypt(cipher2.label_encrypted))
         return product
 
 
-class LabEncryptedNumber(EncryptedNumber):
+class LabEncryptedNumber(paillier.EncryptedNumber):
     def __init__(self, public_key, message_obfuscated, label_encrypted, ciphertext = None, exponent=0):
         super().__init__(public_key, exponent=0, ciphertext=None)
         self.message_obfuscated = message_obfuscated

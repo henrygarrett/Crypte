@@ -85,22 +85,21 @@ def test_encrypt_decrypt(verbose=True):
 
     assert decrypted_data == raw_data
 def test_multiply_ciphers(CSP):
-    cipher1 = CSP.key_manager.public_key.lab_encrypt(3, 2, '1')
-    print(CSP.key_manager.private_key.lab_decrypt(cipher1))
-    cipher2 = CSP.key_manager.public_key.lab_encrypt(4, 5, '10')
-    print(CSP.key_manager.private_key.lab_decrypt(cipher2))
+    cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
+    cipher2 = CSP.key_manager.public_key.lab_encrypt(45879457845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
     result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
     print(result)
-    assert result == 12
+    assert result == 47846845 * 45879457845
+    print(result == 47846845 * 45879457845)
 # Tests general LabHE multiplication
 def test_HE_mult():
-    ciphertext1 = CSP.key_manager.public_key.lab_encrypt(3, 25, '101')
-    ciphertext2 = CSP.key_manager.public_key.lab_encrypt(4, 27, '110')
+    ciphertext1 = CSP.key_manager.public_key.lab_encrypt(47846845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
+    ciphertext2 = CSP.key_manager.public_key.lab_encrypt(45879457845, CSP.gen_label(), CSP.local_gen(CSP.key_manager.public_key)[0])
     
     result = CSP.key_manager.public_key.general_lab_multiplication(ciphertext1, ciphertext2, CSP)
     decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
     print(decrypted_result)
-    assert decrypted_result == 12
+    assert decrypted_result == 47846845 * 45879457845
     
 
 # Tests the Project Operator works correctly
