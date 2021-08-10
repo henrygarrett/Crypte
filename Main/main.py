@@ -15,8 +15,8 @@ import time
 from CSP.CryptographicServiceProvider import CryptographicServiceProvider
 from AS.AnalyticsServer import AnalyticsServer
 
-def init_crypte(ask_prompt=True, verbose=True):
 
+def init_crypte(ask_prompt=True, verbose=True):
     if (not ask_prompt) or (input('Replace budget, keys and data? y/n\n') != 'y'):
         generate_keys = False
         if 'budget.txt' not in os.listdir('..' + os.sep + 'CSP'):
@@ -51,12 +51,15 @@ def init_crypte(ask_prompt=True, verbose=True):
         print("\n")
     return AS, CSP
 
+
 # Initialise Crypte system
 
 AS, CSP = init_crypte(ask_prompt=False)
 
 # Raw data for the tests
-TEST_DATA = [['25', 'spain', 'yes'], ['38', 'france', 'no'], ['39', 'italy', 'no'], ['29', 'italy', 'yes'], ['22', 'italy', 'yes']]
+TEST_DATA = [['25', 'spain', 'yes'], ['38', 'france', 'no'], ['39', 'italy', 'no'], ['29', 'italy', 'yes'],
+             ['22', 'italy', 'yes']]
+
 
 # Test functions
 
@@ -74,6 +77,7 @@ def test_encode_decode(verbose=True):
 
     assert decoded_data == raw_data
 
+
 def test_encrypt_decrypt(verbose=True):
 
 
@@ -86,13 +90,24 @@ def test_encrypt_decrypt(verbose=True):
         print("\n")
 
     assert decrypted_data == raw_data
+
+
+def test_encrypted_data(verbose=True):
+    decrypted_data = CSP.decrypt_data(AS.aggregator.data_encrypted)
+    if verbose:
+        print(AS.aggregator.data_encoded)
+        print(decrypted_data)
+    assert decrypted_data == AS.aggregator.data_encoded
+
+
 def test_multiply_ciphers(CSP):
     cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845)
     cipher2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
     result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
     print(result)
     assert result == 47846845 * 45879457845
-    print(result == 47846845 * 45879457845)
+
+
 # Tests general LabHE multiplication
 def test_HE_mult():
     ciphertext1 = CSP.key_manager.public_key.lab_encrypt(47846845)
@@ -100,17 +115,18 @@ def test_HE_mult():
     
     result = CSP.key_manager.public_key.general_lab_multiplication(ciphertext1, ciphertext2, CSP)
     decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
-    print(decrypted_result)
+    print("Actual Answer:", 47846845 * 45879457845)
+    print("Decrypted Result:", decrypted_result)
     assert decrypted_result == 47846845 * 45879457845
-    print(decrypted_result == 47846845 * 45879457845)
-    
+
 
 # Tests the Project Operator works correctly
 def test_project(verbose=True):
-
     # Compute test query
-    query_result = AS.aggregator.decode_data(CSP.decrypt_data(AS.program_executor.project(AS.aggregator.data_encrypted, [0,2])), attribute_nums=[0,2]) # project, decrypt, decode
-    query_result = list(map(lambda x: [str(val) for val in x], query_result)) # Raw data is strings so this is just to make the assert comparison work at the end
+    query_result = AS.aggregator.decode_data(
+        CSP.decrypt_data(AS.program_executor.project(AS.aggregator.data_encrypted, [0, 2])),
+        attribute_nums=[0, 2])  # project, decrypt, decode
+    query_result = list(map(lambda x: [str(val) for val in x], query_result))  # Raw data is strings so this is just to make the assert comparison work at the end
 
     # Get the actual filtering answer
     data = AS.aggregator.data.copy()
@@ -119,7 +135,7 @@ def test_project(verbose=True):
     for row in data:
         filtered_row = []
         for i, val in enumerate(row):
-            if i in [0,2]:
+            if i in [0, 2]:
                 filtered_row.append(val)
         filtered_raw_data.append(filtered_row)
 
@@ -131,8 +147,9 @@ def test_project(verbose=True):
 
     assert filtered_raw_data == query_result
 
+
 def test_count(verbose=True):
-    bit_vector = [1,0,0,1,1]
+    bit_vector = [1, 0, 0, 1, 1]
 
     # Encrypted bit_vector
     bit_vector_enc = [CSP.key_manager.public_key.lab_encrypt(val) for val in bit_vector]
@@ -141,15 +158,31 @@ def test_count(verbose=True):
 
     assert query_result == 3
 
-# Tests the Filter operator works correctly
-def test_filter():
-    bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1,1,1,1,1],[1,1]], CSP)
-    print("Decrypted filter:", CSP.decrypt_bit_vector(bit_vector))
 
-#test_multiply_ciphers(CSP)
-#test_encrypt_decrypt()
-#test_encode_decode()
-#test_HE_mult()
-#test_project()
-test_count()
-#test_filter()
+# Tests the Filter operator works correctly
+def test_filter(verbose=True):
+    bit_vector = AS.program_executor.filter(AS.aggregator.data_encrypted,
+                                            [list(np.ones(21, dtype="uint8")), [1, 1, 1, 1, 1], [1, 0]], CSP)
+    decrypted_filter = CSP.decrypt_bit_vector(bit_vector)
+    if verbose:
+        print("Encoded Raw Data:", AS.aggregator.data_encoded)
+        print("Decrypted filter:", decrypted_filter)
+
+    assert decrypted_filter == [1,0,0,1,1]
+
+# Basic encryption/encoding tests
+
+# test_encrypt_decrypt()
+# test_encode_decode()
+# test_encrypted_data()
+
+# Multiplication tests
+
+# test_multiply_ciphers(CSP)
+# test_HE_mult()
+
+# Operator tests
+
+# test_project()
+# test_count()
+test_filter()

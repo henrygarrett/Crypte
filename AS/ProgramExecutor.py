@@ -29,21 +29,23 @@ class ProgramExecutor():
 
     # data_attr: List of indexes telling us what each attribute
     def filter(self, encrypted_data, predicates, CSP, predicate_features=None, data_features=None):#predicate inputed in double binary list i.e. [[0,1,0,1],[1,1,1,0],[1,1]]
+        # TODO: Error check to ensure predicate_features subset of data_features
         if predicate_features is None:
             predicate_features = range(0, self.num_attr) # If none assume the predicate is over all attributes
         if data_features is None:
             data_features = range(0, self.num_attr) # If none assume the encrypted data has all attributes (i.e has not been projected)
 
         bit_vector = []
-        for row in encrypted_data:
+        for i, row in enumerate(encrypted_data):
             row_indicator = self.public_key.lab_encrypt(1)
-            for i, predicate in enumerate(predicates):
+            for j, predicate in enumerate(predicates):
                 attribute_indicator = self.public_key.lab_encrypt(0)
-                attr_val = row[data_features.index(predicate_features[i])]
-                for index in predicate:
+                attr_val = row[data_features.index(predicate_features[j])]
+                for k,index in enumerate(predicate):
                     if index == 1:
-                        attribute_indicator._lab_add_encrypted(attr_val[index])
+                        attribute_indicator = attribute_indicator._lab_add_encrypted(attr_val[k])
                 row_indicator = self.public_key.general_lab_multiplication(row_indicator, attribute_indicator, CSP)
+
             bit_vector.append(row_indicator)
 
         return bit_vector
