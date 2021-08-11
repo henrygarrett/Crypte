@@ -68,7 +68,7 @@ def test_encode_decode(verbose=True):
     decoded_data = AS.aggregator.decode_row(AS.aggregator.data_encoded[0])
     decoded_data = [str(val) for val in decoded_data]
     raw_data = [str(val) for val in AS.aggregator.data[0]]
-
+    
     if verbose:
         print("Decoded Data:" + str(decoded_data))
         print("Raw Data:" + str(raw_data))
@@ -93,31 +93,40 @@ def test_encrypt_decrypt(verbose=True):
 
 def test_encrypted_data(verbose=True):
     decrypted_data = CSP.decrypt_data(AS.aggregator.data_encrypted)
+    
     if verbose:
         print(AS.aggregator.data_encoded)
         print(decrypted_data)
+    
     assert decrypted_data == AS.aggregator.data_encoded
     return True
 
 
-def test_multiply_ciphers(CSP):
+def test_multiply_ciphers(CSP, verbose=True):
     cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845)
     cipher2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
     result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
-    print(result)
+    
+    if verbose:
+        print('result: ' + str(result))
+        print('Answer: ' + str(47846845 * 45879457845))
+        
     assert result == 47846845 * 45879457845
     return True
 
 
 # Tests general LabHE multiplication
-def test_HE_mult():
+def test_HE_mult(verbose=True):
     ciphertext1 = CSP.key_manager.public_key.lab_encrypt(47846845)
     ciphertext2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
     
     result = CSP.key_manager.public_key.general_lab_multiplication(ciphertext1, ciphertext2, CSP)
     decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
-    print("Actual Answer:", 47846845 * 45879457845)
-    print("Decrypted Result:", decrypted_result)
+    
+    if verbose:
+        print("Actual Answer:", 47846845 * 45879457845)
+        print("Decrypted Result:", decrypted_result)
+    
     assert decrypted_result == 47846845 * 45879457845
     return True
 
