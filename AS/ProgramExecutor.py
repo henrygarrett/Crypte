@@ -11,7 +11,7 @@ class ProgramExecutor():
         # Both of the above are needed for filtering
     
     def cross_product(self, encrypted_data, attribute1, attribute2, CSP):
-        new_data_set = encrypted_data
+        new_data_set = copy.deepcopy(encrypted_data)
         for i, element in enumerate(new_data_set):
             vector1 = element.pop(attribute1)
             vector2 = element.pop(attribute2 if attribute1 > attribute2 else attribute2 - 1)
@@ -24,8 +24,8 @@ class ProgramExecutor():
     def project(self, encrypted_data, attributes_chosen):
         attributes_chosen = [attributes_chosen] if type(attributes_chosen) == int else attributes_chosen
         new_data_set = []
-        for element in encrypted_data:
-            new_data_set.append(list(np.array(element, dtype="object", ndmin=1)[attributes_chosen])) # By making it a numpy array we can pass lists of indexes as attributes_chosen
+        for row in encrypted_data:
+            new_data_set.append(list(np.array(row, dtype="object", ndmin=1)[attributes_chosen])) # By making it a numpy array we can pass lists of indexes as attributes_chosen
             # i.e passing attributes_chosen=[0,2] will do a projection onto the first and third attribute etc
         return new_data_set
 

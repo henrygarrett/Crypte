@@ -229,15 +229,15 @@ def test_group_by_count(verbose=True):
 # test_encode_decode()
 # test_encrypted_data()
 
-# --- Multiplication tests ---
+# # --- Multiplication tests ---
 
 # test_multiply_ciphers(CSP)
 # test_HE_mult()
 
-# --- Operator tests ---
+# # --- Operator tests ---
 
 # test_project()
 # test_count()
 # test_filter()
-test_cross_product()
+# test_cross_product()
 # test_group_by_count()
