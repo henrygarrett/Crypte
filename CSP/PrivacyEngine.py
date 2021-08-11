@@ -1,4 +1,3 @@
-import pathlib
 import os
 
 class PrivacyEngine():
@@ -12,7 +11,10 @@ class PrivacyEngine():
     def is_program_allowed(self, program_epsilon):
         if self.epsilon_budget - program_epsilon < 0:
             return False
-        return True
+        else:
+            return True
+    def add_to_ledger(self, program_epsilon):
+        pass
 
     def save_epsilon_budget(self):
         with open('.' + os.sep + 'budget.txt', 'w') as budget_file:

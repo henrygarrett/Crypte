@@ -8,6 +8,7 @@ class ProgramExecutor():
         self.public_key = public_key
         self.num_rows = num_rows # Number of rows in the dataset
         self.num_attr = num_attr # Number of attributes in the dataset
+        self.sensitivity = 1
         # Both of the above are needed for filtering
     
     def cross_product(self, encrypted_data, attribute1, attribute2, CSP):
@@ -62,6 +63,7 @@ class ProgramExecutor():
         return total
 
     def group_by_count(self, encrypted_data, attribute, CSP):
+        self.sensitivity *= 2
         return_vector = []
         new_data_set = self.project(encrypted_data, attribute)
         attribute_size =  len(encrypted_data[0][attribute])
@@ -72,6 +74,7 @@ class ProgramExecutor():
         return return_vector
     
     def group_by_count_encoded(self, encrypted_data, attribute, CSP):
+        self.sensitivity *= 2
         def rightRotate(lists, num):
             output_list = []
             length = len(lists)
@@ -89,3 +92,8 @@ class ProgramExecutor():
         gbc_vector_masked = [self.public_key.lab_encrypt(M[i])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(encrypted_data))
         return [rightRotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]
+    
+    def laplace(self, data, privacy_parameter, CSP):
+        data = data if type(data) == list else [data]
+        noisy_data = [value._lab_add_encrypted(self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*self.sensitivity)/privacy_parameter))) for value in data]
+        return CSP.laplace(noisy_data, self.sensitivity, privacy_parameter)

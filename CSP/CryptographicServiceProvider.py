@@ -3,9 +3,7 @@
 
 from .PrivacyEngine import PrivacyEngine
 from .KeyManager import KeyManager
-from lab_paillier.lab_paillier import LabEncryptedNumber
-
-import random
+import numpy as np
 
 class CryptographicServiceProvider():
     def __init__(self, epsilon_budget, generate_keys=False):
@@ -52,3 +50,8 @@ class CryptographicServiceProvider():
                     return_vector[i].append(1)
         return_vector_encrypted = [[public_key.lab_encrypt(bit) for bit in value] for value in return_vector]
         return return_vector_encrypted
+    def laplace(self, data, sensitivity, privacy_parameter):
+        if self.privacy_engine.is_program_allowed(privacy_parameter):
+            return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2*sensitivity)/privacy_parameter) for value in data]
+        else:
+            raise Exception('Privacy Budget Exceeded')

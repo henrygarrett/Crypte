@@ -4,13 +4,10 @@ Created on Wed Jul 28 09:51:30 2021
 
 @author: madma
 """
-
-import pathlib
 import pickle
 import os
 import ast
 import numpy as np
-import time
 
 from CSP.CryptographicServiceProvider import CryptographicServiceProvider
 from AS.AnalyticsServer import AnalyticsServer
@@ -92,7 +89,6 @@ def test_encrypt_decrypt(verbose=True):
     assert decrypted_data == raw_data
     return True
 
-
 def test_encrypted_data(verbose=True):
     decrypted_data = CSP.decrypt_data(AS.aggregator.data_encrypted)
     
@@ -103,7 +99,6 @@ def test_encrypted_data(verbose=True):
         print("\n")
     assert decrypted_data == AS.aggregator.data_encoded
     return True
-
 
 def test_multiply_ciphers(verbose=True):
     cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845)
@@ -116,7 +111,6 @@ def test_multiply_ciphers(verbose=True):
         print("\n")
     assert result == 47846845 * 45879457845
     return True
-
 
 # Tests general LabHE multiplication
 def test_HE_mult(verbose=True):
@@ -133,6 +127,7 @@ def test_HE_mult(verbose=True):
         print("\n")
     assert decrypted_result == 47846845 * 45879457845
     return True
+
 
 
 # Tests the Project Operator works correctly
@@ -170,7 +165,7 @@ def test_project(verbose=True):
     assert one_attribute_test.shape == (5,1,21)
     return True
 
-
+# Tests the Count Operator works correctly
 def test_count(verbose=True):
     bit_vector = [1, 0, 0, 1, 1]
 
@@ -187,7 +182,6 @@ def test_count(verbose=True):
 
     assert query_result == 3
     return True
-
 
 # Tests the Filter operator works correctly
 def test_filter(verbose=True):
@@ -212,6 +206,7 @@ def test_filter(verbose=True):
     assert decrypted_filter3 == [1,0,0,1,1]
     return True
 
+# Tests the Cross Product Operator works correctly
 def test_cross_product(verbose=True):
     result = AS.program_executor.cross_product(AS.aggregator.data_encrypted, 1, 2, CSP)
     result = [[[CSP.key_manager.private_key.lab_decrypt(value) for value in attribute]for attribute in row]for row in result]
@@ -230,7 +225,8 @@ def test_cross_product(verbose=True):
         print("\n")
     assert true_value == result
     return True
-   
+
+# Tests the GBC Operator works correctly
 def test_group_by_count(verbose=True):
     result = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     result = [CSP.key_manager.private_key.lab_decrypt(value) for value in result]
@@ -244,8 +240,10 @@ def test_group_by_count(verbose=True):
     assert result == true_value
     return True
 
-# Tests the Group By Count Encoded Operator works correctly
+# Tests the GBCE Operator works correctly
 def test_group_by_count_encoded(verbose=True):
+    
+# Tests the Laplace Operator works correctly
     result = AS.program_executor.group_by_count_encoded(AS.aggregator.data_encrypted, 1, CSP)
     result = [[CSP.key_manager.private_key.lab_decrypt(value) for value in row]for row in result]
     true_value = [[1,0,0,0,0,0],[0,1,0,0,0,0],[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,0,1,0,0]]
@@ -257,25 +255,30 @@ def test_group_by_count_encoded(verbose=True):
 
     assert result == true_value
     return True
+def test_laplace(verbose=True):
+    data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
+    print(AS.program_executor.laplace(data, 5, CSP))# 5 seems to give reasonable noise on output for our values +/- 2ish
+    
 
 
 
 # # --- Basic encryption/encoding tests ---
 
-test_encrypt_decrypt()
-test_encode_decode()
-test_encrypted_data()
+# test_encrypt_decrypt()
+# test_encode_decode()
+# test_encrypted_data()
 
-# --- Multiplication tests ---
+# # --- Multiplication tests ---
 
-test_multiply_ciphers()
-test_HE_mult()
+# test_multiply_ciphers()
+# test_HE_mult()
 
-# --- Operator tests ---
+# # --- Operator tests ---
 
-test_project()
-test_count()
-test_filter()
-test_cross_product()
-test_group_by_count()
-test_group_by_count_encoded()
+# test_project()
+# test_count()
+# test_filter()
+# test_cross_product()
+# test_group_by_count()
+# test_group_by_count_encoded()
+test_laplace()
