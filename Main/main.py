@@ -70,6 +70,7 @@ def test_encode_decode(verbose=True):
     raw_data = [str(val) for val in AS.aggregator.data[0]]
     
     if verbose:
+        print("TEST: Encode-Decode")
         print("Decoded Data:" + str(decoded_data))
         print("Raw Data:" + str(raw_data))
         print("Test Result:", str(decoded_data == raw_data))
@@ -82,6 +83,7 @@ def test_encrypt_decrypt(verbose=True):
     decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10)))
     raw_data = 10
     if verbose:
+        print("TEST: Encrypt-Decrypt")
         print("Decrypted Data:" + str(decrypted_data))
         print("Raw Data:" + str(raw_data))
         print("Test Result:", str(decrypted_data == raw_data))
@@ -95,22 +97,23 @@ def test_encrypted_data(verbose=True):
     decrypted_data = CSP.decrypt_data(AS.aggregator.data_encrypted)
     
     if verbose:
-        print(AS.aggregator.data_encoded)
-        print(decrypted_data)
-    
+        print("TEST: Encrypted data")
+        print("Encoded Data:", AS.aggregator.data_encoded)
+        print("Decrypted Data:", decrypted_data)
+        print("\n")
     assert decrypted_data == AS.aggregator.data_encoded
     return True
 
 
-def test_multiply_ciphers(CSP, verbose=True):
+def test_multiply_ciphers(verbose=True):
     cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845)
     cipher2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
     result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
-    
     if verbose:
-        print('result: ' + str(result))
-        print('Answer: ' + str(47846845 * 45879457845))
-        
+        print("TEST: Multiply Ciphers")
+        print("True value:", 47846845 * 45879457845)
+        print("Result", result)
+        print("\n")
     assert result == 47846845 * 45879457845
     return True
 
@@ -124,9 +127,10 @@ def test_HE_mult(verbose=True):
     decrypted_result = CSP.key_manager.private_key.lab_decrypt(result)
     
     if verbose:
+        print("TEST: LabHE Multiplication")
         print("Actual Answer:", 47846845 * 45879457845)
         print("Decrypted Result:", decrypted_result)
-    
+        print("\n")
     assert decrypted_result == 47846845 * 45879457845
     return True
 
@@ -155,6 +159,7 @@ def test_project(verbose=True):
         projected_raw_data.append(filtered_row)
 
     if verbose:
+        print("TEST: Project Operator")
         print("True Projected Data:", query_result)
         print("Query Result:", projected_raw_data)
         print("Test Result:", str(projected_raw_data == query_result))
@@ -175,6 +180,7 @@ def test_count(verbose=True):
     query_result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count(bit_vector_enc)) # Count the bit_vector, decrypt
 
     if verbose:
+        print("TEST: Count Operator")
         print("Query Result:", query_result)
         print("Actual answer:", 3)
         print("\n")
@@ -194,6 +200,7 @@ def test_filter(verbose=True):
     decrypted_filter3 = CSP.decrypt_bit_vector(bit_vector3)
 
     if verbose:
+        print("TEST: Filter Operator")
         print("Full Data Test - Encoded Raw Data:", AS.aggregator.data_encoded)
         print("All attributes, All predicates Test:", decrypted_filter1)
         print("All attributes, Single Predicate Test:", decrypted_filter2)
@@ -215,6 +222,12 @@ def test_cross_product(verbose=True):
         length = len(AS.aggregator.data_encoded[i][1])*len(AS.aggregator.data_encoded[i][2])
         true_value[i].append(AS.aggregator.data_encoded[i][0])
         true_value[i].append([1 if i == index else 0 for i in range(length)])
+
+    if verbose:
+        print("TEST: Cross-Product Operator")
+        print("True Value:", true_value)
+        print("Query Result:", result)
+        print("\n")
     assert true_value == result
     return True
    
@@ -224,8 +237,9 @@ def test_group_by_count(verbose=True):
     true_value = [3,2]
 
     if verbose:
+        print("TEST: GBC")
         print("Query Result:", result)
-        print("True Value:", true_value)
+        print("True Value:", true_value, "\n")
 
     assert result == true_value
     return True
@@ -234,19 +248,19 @@ def test_group_by_count(verbose=True):
 
 # --- Basic encryption/encoding tests ---
 
-# test_encrypt_decrypt()
-# test_encode_decode()
-# test_encrypted_data()
+test_encrypt_decrypt()
+test_encode_decode()
+test_encrypted_data()
 
 # # --- Multiplication tests ---
 
-# test_multiply_ciphers(CSP)
-# test_HE_mult()
+test_multiply_ciphers()
+test_HE_mult()
 
 # # --- Operator tests ---
 
-# test_project()
-# test_count()
-# test_filter()
-# test_cross_product()
-# test_group_by_count()
+test_project()
+test_count()
+test_filter()
+test_cross_product()
+test_group_by_count()
