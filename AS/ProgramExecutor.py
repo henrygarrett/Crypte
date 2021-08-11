@@ -74,14 +74,13 @@ class ProgramExecutor():
     def group_by_count_encoded(self, encrypted_data, attribute, CSP):
         def rightRotate(lists, num):
             output_list = []
-            print(list)
-            # Will add values from n to the new list
-            for item in range(len(lists) - (num%len(lists)), len(lists)):
+            length = len(lists)
+            # Will add values from n up to the new list
+            for item in range(num % length, length):
                 output_list.append(lists[item])
               
-            # Will add the values before
-            # n to the end of new list    
-            for item in range(0, len(lists) - num): 
+            # Will add the values before n to the end of new list    
+            for item in range(0, num % length): 
                 output_list.append(lists[item])
 
             return output_list
@@ -89,4 +88,4 @@ class ProgramExecutor():
         M = [random.randint(0,10**5) for n in range(len(gbc_vector))]
         gbc_vector_masked = [self.public_key.lab_encrypt(M[i])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(encrypted_data))
-        return [rightRotate(return_vector_encrypted[i], M[i]) for i in range(len(return_vector_encrypted))]
+        return [rightRotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]

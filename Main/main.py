@@ -244,6 +244,20 @@ def test_group_by_count(verbose=True):
     assert result == true_value
     return True
 
+# Tests the Group By Count Encoded Operator works correctly
+def test_group_by_count_encoded(verbose=True):
+    result = AS.program_executor.group_by_count_encoded(AS.aggregator.data_encrypted, 1, CSP)
+    result = [[CSP.key_manager.private_key.lab_decrypt(value) for value in row]for row in result]
+    true_value = [[1,0,0,0,0,0],[0,1,0,0,0,0],[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,0,1,0,0]]
+
+    if verbose:
+        print("TEST: GBCE")
+        print("Query Result:", result)
+        print("True Value:", true_value)
+
+    assert result == true_value
+    return True
+
 
 
 # --- Basic encryption/encoding tests ---
@@ -252,15 +266,16 @@ test_encrypt_decrypt()
 test_encode_decode()
 test_encrypted_data()
 
-# # --- Multiplication tests ---
+# --- Multiplication tests ---
 
 test_multiply_ciphers()
 test_HE_mult()
 
-# # --- Operator tests ---
+# --- Operator tests ---
 
 test_project()
 test_count()
 test_filter()
 test_cross_product()
 test_group_by_count()
+test_group_by_count_encoded()

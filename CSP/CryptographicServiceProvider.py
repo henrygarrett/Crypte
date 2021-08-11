@@ -51,12 +51,10 @@ class CryptographicServiceProvider():
         return_vector = []
         for i, value in enumerate(gbc_vector_masked_decrypted):
             return_vector.append([])
-            for j in range(data_set_size):
-                if j != value:
+            for j in range(data_set_size + 1):
+                if j != (value % (data_set_size + 1)):
                     return_vector[i].append(0)
                 else:
                     return_vector[i].append(1)
-        return_vector_encrypted = [
-            [public_key.lab_encrypt(bit) for bit in value] for value in
-            return_vector]
+        return_vector_encrypted = [[public_key.lab_encrypt(bit) for bit in value] for value in return_vector]
         return return_vector_encrypted
