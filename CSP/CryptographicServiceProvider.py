@@ -34,14 +34,8 @@ class CryptographicServiceProvider():
         return [self.key_manager.private_key.lab_decrypt(enc) for enc in bit_vector]
 
     def lab_multiplication(self, intermediary, cipher1, cipher2):
-        public_key = self.key_manager.public_key
-        private_key = self.key_manager.private_key
-        decrypt_intermediary = private_key.decrypt(intermediary) + private_key.decrypt(
-            cipher1.label_encrypted) * private_key.decrypt(cipher2.label_encrypted)
-        return_label = random.randint(0, 10 ** 40)
-        return_intermediary = decrypt_intermediary + return_label
-        return_label_encrypted = public_key.encrypt(return_label)
-        return_cipher = LabEncryptedNumber(public_key, return_intermediary, return_label_encrypted)
+        decrypt_intermediary = self.key_manager.private_key.decrypt(intermediary) + self.key_manager.private_key.decrypt(cipher1.label_encrypted) * self.key_manager.private_key.decrypt(cipher2.label_encrypted)
+        return_cipher = self.key_manager.public_key.lab_encrypt(decrypt_intermediary)
         return return_cipher
 
     def group_by_count_encoded(self, gbc_vector_masked, data_set_size):
