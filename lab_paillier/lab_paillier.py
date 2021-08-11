@@ -35,24 +35,10 @@ DEFAULT_KEYSIZE = 2048
 
 class LabPaillierPublicKey(paillier.PaillierPublicKey):
     def lab_encrypt(self, message_encoded):
-        def gen_label():
-            label = str(random.randint(1,9))
-            for _ in range(29):
-                label += str(random.randint(0,9))
-            return int(label)
-        def local_gen(self):
-            seed = ''
-            for _ in range(100):
-                seed += str(random.randint(0,1))
-                seed_encoded = int(seed,2)
-                seed_encrypted = self.encrypt(seed_encoded)
-            return bin(seed_encoded), seed_encrypted
-        seed = local_gen(self)[0]
-        label = gen_label()
-        mask = int(seed, 2)*label*random.randint(0,10**40)
-        message_obfuscated = int(message_encoded) + mask
-        label_encrypted = self.encrypt(mask)
-        encrypted_number = LabEncryptedNumber(self, message_obfuscated, label_encrypted)
+        seed = random.randint(10**39,10**40)
+        label = random.randint(10**29,10**30)
+        mask = seed*label*random.randint(0,10**40)
+        encrypted_number = LabEncryptedNumber(self, int(message_encoded) + mask, self.encrypt(mask))
         return encrypted_number
 
     def multiply_ciphers(self, cipher1, cipher2, CSP):

@@ -260,22 +260,22 @@ def test_group_by_count_encoded(verbose=True):
 
 
 
-# --- Basic encryption/encoding tests ---
+# # --- Basic encryption/encoding tests ---
 
-test_encrypt_decrypt()
-test_encode_decode()
-test_encrypted_data()
+# test_encrypt_decrypt()
+# test_encode_decode()
+# test_encrypted_data()
 
-# --- Multiplication tests ---
+# # --- Multiplication tests ---
 
-test_multiply_ciphers()
-test_HE_mult()
+# test_multiply_ciphers()
+# test_HE_mult()
 
-# --- Operator tests ---
+# # --- Operator tests ---
 
-test_project()
-test_count()
-test_filter()
-test_cross_product()
-test_group_by_count()
+# test_project()
+# test_count()
+# test_filter()
+# test_cross_product()
+# test_group_by_count()
 test_group_by_count_encoded()
