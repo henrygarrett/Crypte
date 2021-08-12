@@ -4,10 +4,10 @@
     see the Garbler's section.
 """
 import pickle
-import gabes.network as net
+import new_gabes.network as net
 
-from gabes.ot import evaluator_ot
-from gabes.utils import ask_for_inputs
+from new_gabes.ot import evaluator_ot
+from new_gabes.utils import ask_for_inputs
 
 
 def evaluator():

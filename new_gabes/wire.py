@@ -6,11 +6,10 @@ wire holds the two possible for labels that run through it.
 """
 
 import random
-import gabes.settings as settings
+import new_gabes.settings as settings
 
-from gabes.utils import xor
-from gabes.label import Label
-
+from new_gabes.utils import xor
+from new_gabes.label import Label
 
 class Wire(object):
     """

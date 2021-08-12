@@ -8,7 +8,7 @@ of the bitstring, head to :mod:`gabes.settings`.
 
 import os
 import base64
-import gabes.settings as settings
+import new_gabes.settings as settings
 
 
 class Label(object):

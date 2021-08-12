@@ -13,7 +13,7 @@ a stronger cryptographic encryption scheme such as AES256.
 import struct
 import hashlib
 import base64
-import gabes.settings as settings
+import new_gabes.settings as settings
 
 from Crypto.Cipher import AES
 

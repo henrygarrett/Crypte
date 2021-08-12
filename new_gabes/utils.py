@@ -2,7 +2,7 @@
     This module includes utility functions used throughout the package.
 """
 
-import gabes.settings as settings
+import new_gabes.settings as settings
 import os
 
 
