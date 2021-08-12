@@ -9,7 +9,23 @@ from pygarble.alice import keypair # we will use this to generate some example k
 
 from pygarble.alice import *
 import json
-import pygarble.json_stuff
+
+def custom_to_json(python_object): # for dealing with bytes, borrowed from www.diveintopython3.net/serializing.html
+    if isinstance(python_object, bytes):
+        return {"__class__": "bytes", "__value__": list(python_object)}
+    else:
+        raise TypeError(repr(python_object) + " not JSON serializable or not bytes.")
+
+def write_json(file_name, j):
+    with open(file_name, 'w') as outfile:
+        json.dump(j, outfile, default=custom_to_json, separators=(',', ':'))
+
+def read_json(file_name):
+    with open(file_name) as data_file:
+        j = json.load(data_file)
+    return j
+
+
 on_input_gates = [[0, "AND", [0, 1]], 
                 [1, "XOR", [2, 3]], 
                 [2, "OR", [0,3]]]
@@ -23,11 +39,7 @@ print(mycirc.fire(my_input))
 
 j = mycirc.prep_for_json()
 
-write_json(file, j)
-
-
+write_json("circuit.json", j)
 
 my_keypair = list(keypair().values())
-my_keypair
-[b'tWiWGameWDMNOTUDRBM2FUWHkpPg9ZqWPM_e3bsvdqc=', b'5-x4_N0gwM_Hh0AYnSykYn2Ab4sCUw9iUzBVw9ZK8tw=']
 alice = Alice(my_keypair)

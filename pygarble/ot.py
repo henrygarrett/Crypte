@@ -3,7 +3,7 @@ from rsa import PublicKey
 from hashlib import sha256
 from itertools import combinations
 from numpy import poly1d
-from json_stuff import *
+from .json_stuff import *
 from random import SystemRandom
 from bigfloat import *
 from builtins import pow as modpow
