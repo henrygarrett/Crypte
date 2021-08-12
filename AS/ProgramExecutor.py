@@ -93,6 +93,9 @@ class ProgramExecutor():
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(encrypted_data))
         return [rightRotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]
     
+    def count_distinct(self):
+        pass
+    
     def laplace(self, data, privacy_parameter, CSP):
         data = data if type(data) == list else [data]
         noisy_data = [value._lab_add_encrypted(self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*self.sensitivity)/privacy_parameter))) for value in data]
