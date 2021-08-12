@@ -4,10 +4,5 @@ Created on Thu Aug 12 11:45:16 2021
 
 @author: Garret_H
 """
-
-from pygarble.bob import *
-
-with open('circuit.json', 'r') as file:
-    json_data = json.load(file)
-
-mycirc = Circuit(json_data)
+import new_gabes.evaluator
+new_gabes.evaluator.evaluator()
