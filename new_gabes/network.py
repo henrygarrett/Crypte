@@ -76,10 +76,7 @@ def receive_data(name):
         :return: the unpickled data
 
     """
-    # size = _receive_data(from_whom, 4)
-    # size = struct.unpack('>I', size)[0]
-    # data = _receive_data(from_whom, size)
-    # unpickled_data = pickle.loads(data)
+
     with open('send_data' + name, 'rb') as data_file:
             unpickled_data = pickle.load(data_file)
     return unpickled_data
