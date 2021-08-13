@@ -120,7 +120,7 @@ def hand_over_labels(circ, garbler_inputs):
                 
             with open('hand_over_labels', 'wb') as file:
                 pickle.dump(secret_label, file)
-            net.send_data('secret_label',secret_label)
+            net.send_datap('secret_label',secret_label)
             #net.wait_for_ack(client)
         else:
             false_label = copy.deepcopy(wire.false_label)

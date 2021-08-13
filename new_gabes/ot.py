@@ -26,11 +26,11 @@
 """
 
 import pickle
-
+from new_gabes.label import Label
 from random import randint
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
-from new_gabes.network import send_data, receive_data, send_ack, wait_for_ack
+from new_gabes.network import send_data, receive_data
 
 
 def garbler_ot(m0, m1):
@@ -46,6 +46,8 @@ def garbler_ot(m0, m1):
         :param bytes m0: the first bytes object (in this case, a label)
         :param bytes m1: the second bytes object (in this case, a label)
     """
+    m0 = Label(0)
+    m1 = Label(1)
     private_key = rsa.generate_private_key(public_exponent=65537,
                                            key_size=512,
                                            backend=default_backend())
@@ -63,7 +65,6 @@ def garbler_ot(m0, m1):
     m0 = int.from_bytes(bytes_m0, byteorder='big')
     m1 = int.from_bytes(bytes_m1, byteorder='big')
     send_data('list2',[m0 + k0, m1 + k1, len(bytes_m0), len(bytes_m1)])
-    #wait_for_ack(client)
 
 
 def evaluator_ot(b):
@@ -76,9 +77,10 @@ def evaluator_ot(b):
         :param sock: the garbler's address
         :param bool b: the evaluator's bit
     """
-    b = 1
+   
     x0, x1, n, e = receive_data('list1')
     k = randint(2, n // 2)
+    b = 1
     chosen_x = x1 if b == '1' else x0
     v = (chosen_x + pow(k, e, n)) % n
     send_data('v',v)
@@ -86,5 +88,9 @@ def evaluator_ot(b):
     chosen_t = t1 if b == '1' else t0
     chosen_size = size_m1 if b == '1' else size_m0
     m = chosen_t - k
-    label = pickle.loads(int.to_bytes(m, length=chosen_size, byteorder='big'))
+    label = pickle.loads(int.to_bytes(int(m), length=chosen_size, byteorder='big'))
     return label
+
+
+garbler_ot(Label(0), Label(1))
+evaluator_ot(1)
