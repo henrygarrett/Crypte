@@ -33,7 +33,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from new_gabes.network import send_data, receive_data
 
 
-def garbler_ot(m0, m1):
+def garbler_ot1(m0, m1, b):
     """
         The OT protocol seen from the point of view of the garbler.
         This includes creating the RSA key pair, generating
@@ -57,17 +57,20 @@ def garbler_ot(m0, m1):
     n, e = public_key.public_numbers().n, public_key.public_numbers().e
 
     x0, x1 = [randint(2, n // 2) for _ in range(2)]
-    send_data('list1',[x0, x1, n, e])
-    v = receive_data('v')
+    return [x0, x1, n, e], d
+def garbler_ot2(m0, m1, b):
+    x0, x1, n, e = garbler_ot1(m0, m1, b)[0]
+    d = garbler_ot1(m0, m1, b)[1]
+    v = evaluator_ot1(m0, m1, b)[0]
     k0, k1 = [pow((v - x), d, n) for x in (x0, x1)]
     bytes_m0 = pickle.dumps(m0)
     bytes_m1 = pickle.dumps(m1)
     m0 = int.from_bytes(bytes_m0, byteorder='big')
     m1 = int.from_bytes(bytes_m1, byteorder='big')
-    send_data('list2',[m0 + k0, m1 + k1, len(bytes_m0), len(bytes_m1)])
+    return [m0 + k0, m1 + k1, len(bytes_m0), len(bytes_m1)]
 
 
-def evaluator_ot(b):
+def evaluator_ot1(m0, m1, b):
     """
         The OT protocol seen from the point of view of the evaluator.
         This includes choosing the random :code:`k`, sending
@@ -78,13 +81,15 @@ def evaluator_ot(b):
         :param bool b: the evaluator's bit
     """
    
-    x0, x1, n, e = receive_data('list1')
+    x0, x1, n, e = garbler_ot1(m0, m1, b)[0]
     k = randint(2, n // 2)
     b = 1
     chosen_x = x1 if b == '1' else x0
     v = (chosen_x + pow(k, e, n)) % n
-    send_data('v',v)
-    t0, t1, size_m0, size_m1 = receive_data('list2')
+    return v, k
+def evaluator_ot2(m0, m1, b):
+    v, k = evaluator_ot1(m0, m1, b)
+    t0, t1, size_m0, size_m1 = garbler_ot2(m0, m1, b)
     chosen_t = t1 if b == '1' else t0
     chosen_size = size_m1 if b == '1' else size_m0
     m = chosen_t - k
@@ -92,5 +97,4 @@ def evaluator_ot(b):
     return label
 
 
-garbler_ot(Label(0), Label(1))
-evaluator_ot(1)
+print(evaluator_ot2(Label(0), Label(1), 1))
