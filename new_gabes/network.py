@@ -49,7 +49,7 @@ def connect_evaluator(address):
     return sock
 
 
-def send_data(data):
+def send_data(name, data):
     """
         Sends :code:`data` through the socket. The data is pickled so that
         objects can be sent through the socket. As the socket can accept a
@@ -60,7 +60,6 @@ def send_data(data):
         :param bytes data: the data to send through the socket
 
     """
-    name = str(random.randint(0,10**5))
     with open('send_data' + name, 'wb') as data_file:
             pickle.dump(data, data_file)
     # data = pickle.dumps(data)

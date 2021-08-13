@@ -28,7 +28,7 @@ def evaluator():
     #     inputs = {x: y for x, y in zip(args.identifiers, args.bits)}
     # else:
     #     inputs = ask_for_inputs(idents)
-    inputs = {}
+    inputs = {'4':1,'5':0,'6':0}
     labels = request_labels(idents, inputs)
     circ = request_cleaned_circuit()
     print("Reconstructing circuit...")

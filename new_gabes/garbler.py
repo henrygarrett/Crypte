@@ -49,7 +49,7 @@ def garbler(circ):
     #else:
     #inputs = ask_for_inputs(identifiers)
     #print(inputs)
-    inputs = {'1':0}
+    inputs = {'1':0, '2':1,'3':1}
     hand_over_labels(circ, inputs)
     hand_over_cleaned_circuit(circ)
     name = '1066'
@@ -120,7 +120,7 @@ def hand_over_labels(circ, garbler_inputs):
                 
             with open('hand_over_labels', 'wb') as file:
                 pickle.dump(secret_label, file)
-            net.send_data(secret_label)
+            net.send_data('secret_label',secret_label)
             #net.wait_for_ack(client)
         else:
             false_label = copy.deepcopy(wire.false_label)
@@ -147,5 +147,5 @@ def learn_output(name, circ):
     out1 = output_gate.output_wire.true_label.to_base64()
     out2 = output_label.to_base64()
     output = out1 == out2
-    net.send_data(output)
+    net.send_data('output',output)
     return output
