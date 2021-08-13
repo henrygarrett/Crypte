@@ -87,8 +87,11 @@ def evaluator_ot2(m0, m1, b, t0, t1, size_m1, size_m0, k):
     m = chosen_t - k
     label = pickle.loads(int.to_bytes(int(m), length=chosen_size, byteorder='big'))
     return label
-
-x0, x1, n, e, d = garbler_ot1(Label(0), Label(1), 1)
-v,k = evaluator_ot1(Label(0), Label(1), 1, n, x0, x1, e)
-t0, t1, size_m1, size_m0 = garbler_ot2(Label(0), Label(1), 1, x0, x1, v, d, n)
-print(evaluator_ot2(Label(0), Label(1), 1, t0, t1, size_m1, size_m0, k))
+label1 = Label(1)
+label0 = Label(0)
+x0, x1, n, e, d = garbler_ot1(label0, label1, 1)
+v,k = evaluator_ot1(label0, label1, 1, n, x0, x1, e)
+t0, t1, size_m1, size_m0 = garbler_ot2(label0, label1, 1, x0, x1, v, d, n)
+print(evaluator_ot2(label0, label1, 1, t0, t1, size_m1, size_m0, k))
+print(label1 == evaluator_ot2(label0, label1, 1, t0, t1, size_m1, size_m0, k))
+print(label1 == evaluator_ot2(label0, label1, 1, t0, t1, size_m1, size_m0, k))
