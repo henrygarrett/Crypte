@@ -30,7 +30,6 @@ from new_gabes.label import Label
 from random import randint
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
-from new_gabes.network import send_data, receive_data
 
 
 def garbler_ot1(m0, m1, b):
@@ -46,8 +45,7 @@ def garbler_ot1(m0, m1, b):
         :param bytes m0: the first bytes object (in this case, a label)
         :param bytes m1: the second bytes object (in this case, a label)
     """
-    m0 = Label(0)
-    m1 = Label(1)
+
     private_key = rsa.generate_private_key(public_exponent=65537,
                                            key_size=512,
                                            backend=default_backend())
@@ -57,11 +55,8 @@ def garbler_ot1(m0, m1, b):
     n, e = public_key.public_numbers().n, public_key.public_numbers().e
 
     x0, x1 = [randint(2, n // 2) for _ in range(2)]
-    return [x0, x1, n, e], d
-def garbler_ot2(m0, m1, b):
-    x0, x1, n, e = garbler_ot1(m0, m1, b)[0]
-    d = garbler_ot1(m0, m1, b)[1]
-    v = evaluator_ot1(m0, m1, b)[0]
+    return [x0, x1, n, e, d]
+def garbler_ot2(m0, m1, b, x0, x1, v, d, n):
     k0, k1 = [pow((v - x), d, n) for x in (x0, x1)]
     bytes_m0 = pickle.dumps(m0)
     bytes_m1 = pickle.dumps(m1)
@@ -70,7 +65,7 @@ def garbler_ot2(m0, m1, b):
     return [m0 + k0, m1 + k1, len(bytes_m0), len(bytes_m1)]
 
 
-def evaluator_ot1(m0, m1, b):
+def evaluator_ot1(m0, m1, b, n, x0, x1, e):
     """
         The OT protocol seen from the point of view of the evaluator.
         This includes choosing the random :code:`k`, sending
@@ -80,21 +75,20 @@ def evaluator_ot1(m0, m1, b):
         :param sock: the garbler's address
         :param bool b: the evaluator's bit
     """
-   
-    x0, x1, n, e = garbler_ot1(m0, m1, b)[0]
+
     k = randint(2, n // 2)
     b = 1
     chosen_x = x1 if b == '1' else x0
     v = (chosen_x + pow(k, e, n)) % n
     return v, k
-def evaluator_ot2(m0, m1, b):
-    v, k = evaluator_ot1(m0, m1, b)
-    t0, t1, size_m0, size_m1 = garbler_ot2(m0, m1, b)
+def evaluator_ot2(m0, m1, b, t0, t1, size_m1, size_m0, k):
     chosen_t = t1 if b == '1' else t0
     chosen_size = size_m1 if b == '1' else size_m0
     m = chosen_t - k
     label = pickle.loads(int.to_bytes(int(m), length=chosen_size, byteorder='big'))
     return label
 
-
-print(evaluator_ot2(Label(0), Label(1), 1))
+x0, x1, n, e, d = garbler_ot1(Label(0), Label(1), 1)
+v,k = evaluator_ot1(Label(0), Label(1), 1, n, x0, x1, e)
+t0, t1, size_m1, size_m0 = garbler_ot2(Label(0), Label(1), 1, x0, x1, v, d, n)
+print(evaluator_ot2(Label(0), Label(1), 1, t0, t1, size_m1, size_m0, k))
