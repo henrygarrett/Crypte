@@ -77,14 +77,18 @@ def evaluator_ot(b):
         :param sock: the garbler's address
         :param bool b: the evaluator's bit
     """
+    b = 1
     x0, x1, n, e = receive_data('list1')
     k = randint(2, n // 2)
     chosen_x = x1 if b == '1' else x0
     v = (chosen_x + pow(k, e, n)) % n
     send_data('v',v)
     t0, t1, size_m0, size_m1 = receive_data('list2')
+    print(t0)
+    t1, size_m1, k = 5, 6, 7
     chosen_t = t1 if b == '1' else t0
     chosen_size = size_m1 if b == '1' else size_m0
     m = chosen_t - k
+    print(int.to_bytes(m, length=chosen_size, byteorder='big'))
     label = pickle.loads(int.to_bytes(m, length=chosen_size, byteorder='big'))
     return label

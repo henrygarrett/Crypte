@@ -114,6 +114,6 @@ def learn_output(name, secret_output):
         :rtype: bool
 
     """
-    net.send_data(secret_output)
-    final_output = net.receive_data(name)
+    net.send_data('secret_output',secret_output)
+    final_output = net.receive_data('output')
     return final_output

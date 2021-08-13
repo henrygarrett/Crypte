@@ -142,7 +142,7 @@ def learn_output(name, circ):
         :rtype: bool
 
     """
-    output_label = net.receive_data(name)
+    output_label = net.receive_data('secret_output')
     output_gate = circ.tree.name
     out1 = output_gate.output_wire.true_label.to_base64()
     out2 = output_label.to_base64()
