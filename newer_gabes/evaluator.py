@@ -1,17 +1,18 @@
 import pickle
 from random import randint
-from new_gabes.garbler import Alice
+from newer_gabes.garbler import Alice
 class Bob():
     def __init__(self):
         self.__chosen_bit = None
         self.__k = None
-        self.__inputs = {'2': 0, '4': 1}
+        self.__inputs = {'3': 1, '4': 1}
 
         
     def main(self):
         alice = Alice()
         identifiers = alice.start()
         labels = self.request_labels(identifiers, self.__inputs, alice)
+        print(labels)
         circ = alice.hand_over_cleaned_circuit()
         secret_output = circ.reconstruct(labels)
         final_output = alice.learn_output(secret_output)
@@ -22,8 +23,7 @@ class Bob():
     def request_labels(self, identifiers, evaluator_inputs, alice):
         labels = []
         if not set(evaluator_inputs.keys()).issubset(set(identifiers)):
-            raise ValueError('You have supplied a wire '
-                             'identifier not in the circuit.')
+            raise ValueError('You have supplied a wire identifier not in the circuit.')
         for identifier in identifiers:
             if identifier in evaluator_inputs:
                 self.__chosen_bit = evaluator_inputs[identifier]

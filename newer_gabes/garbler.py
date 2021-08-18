@@ -1,10 +1,10 @@
 import copy
 import pickle
-from new_gabes.circuit import Circuit
+from newer_gabes.garbledcircuit import GarbledCircuit as Circuit
 from cryptography.hazmat.primitives.asymmetric import rsa
 from random import randint
 from cryptography.hazmat.backends import default_backend
-
+from circuit import circuit
 
 class Alice():
     def __init__(self):
@@ -13,8 +13,8 @@ class Alice():
         self.__circ = None
         self.__garbler_inputs = None
         self.__d = None
-        self.__circ_name = 'circuit.txt'
-        self._inputs = {'1': 1, '3' : 0}
+        self.__circ_name = circuit
+        self._inputs = {'1': 1, '2': 0}
 
 
     def start(self, circ_name = None, inputs = None):
@@ -48,6 +48,8 @@ class Alice():
                 wire = item
                 break
         if wire.identifier not in self.__garbler_inputs:
+            print(wire.identifier)
+            print(self.__garbler_inputs)
             raise Exception('identifier doesn\'t appear in garbler or evaluator input lists')
         else:
             chosen_bit = self.__garbler_inputs[wire.identifier]

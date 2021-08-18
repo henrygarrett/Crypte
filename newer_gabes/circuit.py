@@ -16,8 +16,8 @@ import os
 import new_gabes.settings as settings
 import anytree
 
-from new_gabes.gate import Gate
-from new_gabes.utils import get_last_bit
+from newer_gabes.gate import Gate
+from newer_gabes.utils import get_last_bit
 
 
 class Circuit(object):
@@ -159,14 +159,11 @@ class Circuit(object):
                   for children in anytree.LevelOrderGroupIter(self.tree)][::-1]
         for level in levels:
             for node in level:
-                
                 gate = node.name
                 if node.is_leaf:
                     garblers_label = labels.pop(0)
                     evaluators_label = labels.pop(0)
                 else:
-                    left_gate = node.children[0].name
-                    right_gate = node.children[1].name
                     garblers_label = left_gate.chosen_label
                     evaluators_label = right_gate.chosen_label
                 output_label = gate.ungarble(garblers_label, evaluators_label)
