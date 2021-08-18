@@ -26,6 +26,7 @@
 """
 
 import pickle
+from new_gabes.label import Label
 from random import randint
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -33,7 +34,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 class ObliviousTransfer:
     def __init__(self, enabled=True):
         self.enabled = enabled
-    def garb1(self, m0, m1, b):
+    def garb1(m0, m1, b):
         """
             The OT protocol seen from the point of view of the garbler.
             This includes creating the RSA key pair, generating
@@ -57,7 +58,7 @@ class ObliviousTransfer:
     
         x0, x1 = [randint(2, n // 2) for _ in range(2)]
         return [x0, x1, n, e, d]
-    def garb2(self, m0, m1, b, x0, x1, n, v, d):
+    def garb2(m0, m1, b, x0, x1, v, d, n):
         k0, k1 = [pow((v - x), d, n) for x in (x0, x1)]
         bytes_m0 = pickle.dumps(m0)
         bytes_m1 = pickle.dumps(m1)
@@ -66,7 +67,7 @@ class ObliviousTransfer:
         return [m0 + k0, m1 + k1, len(bytes_m0), len(bytes_m1)]
     
     
-    def eval1(self, m0, m1, b, n, x0, x1, e):
+    def eval1(m0, m1, b, n, x0, x1, e):
         """
             The OT protocol seen from the point of view of the evaluator.
             This includes choosing the random :code:`k`, sending
@@ -82,33 +83,28 @@ class ObliviousTransfer:
         chosen_x = x1 if b == '1' else x0
         v = (chosen_x + pow(k, e, n)) % n
         return v, k
-    def eval2(self, m0, m1, b, t0, t1, size_m1, size_m0, k):
+    def eval2(m0, m1, b, t0, t1, size_m1, size_m0, k):
         chosen_t = t1 if b == '1' else t0
         chosen_size = size_m1 if b == '1' else size_m0
         m = chosen_t - k
         label = pickle.loads(int.to_bytes(int(m), length=chosen_size, byteorder='big'))
         return label
-    # label1 = Label(1)
-    # label0 = Label(0)
-    # x0, x1, n, e, d = garb1(label0, label1, 1)
-    # v,k = eval1(label0, label1, 1, n, x0, x1, e)
-    # t0, t1, size_m0, size_m1 = garb2(label0, label1, 1, x0, x1, v, d, n)
-    # end_label = eval2(label0, label1, 1, t0, t1, size_m1, size_m0, k)
-    # print(label0)
-    # print(label1)
-    # print(end_label)
-    # print(label0 == end_label)
-    # print(label1 == end_label)
-     
-    def evaluator_ot(self, b):
-        x0, x1, n, e, d = self.garb1(label0, label1, b)
-        v,k = self.eval1(label0, label1, b, n, x0, x1, e)
-        t0, t1, size_m0, size_m1 = self.garb2(label0, label1, b, x0, x1, v, d, n)
-        end_label = self.eval2(label0, label1, b, t0, t1, size_m0, size_m1, k)
-        return end_label
-    def garbler_ot(self, label0, label1):
-        x0, x1, n, e, d = self.garb1(label0, label1, 1)
-        v,k = self.eval1(label0, label1, 1, n, x0, x1, e)
-        t0, t1, size_m0, size_m1 = self.garb2(label0, label1, 1, x0, x1, v, d, n)
-        end_label = self.eval2(label0, label1, 1, t0, t1, size_m0, size_m1, k)
-        return end_label
+    label1 = Label(1)
+    label0 = Label(0)
+    x0, x1, n, e, d = garb1(label0, label1, 1)
+    v,k = eval1(label0, label1, 1, n, *garb1(label0, label1, 1)[:1], garb1(label0, label1, 1)[3])
+    t0, t1, size_m0, size_m1 = garb2(label0, label1, 1, x0, x1, v, d, n)
+    end_label = eval2(label0, label1, 1, t0, t1, size_m0, size_m1, k)
+    print(label0)
+    print(label1)
+    print(end_label)
+    print(label0 == end_label)
+    print(label1 == end_label)
+    
+    
+    # def evaluator_ot(m0, m1, b, n, x0, x1, e):
+    #     x0, x1, n, e, d = garbler_ot1(label0, label1, 1)
+    #     v,k = evaluator_ot1(label0, label1, 1, n, x0, x1, e)
+    #     t0, t1, size_m0, size_m1 = garbler_ot2(label0, label1, 1, x0, x1, v, d, n)
+    #     end_label = evaluator_ot2(label0, label1, 1, t0, t1, size_m0, size_m1, k)
+    #     return end_label

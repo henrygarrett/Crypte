@@ -36,6 +36,9 @@ class Label(object):
         self.label = os.urandom(settings.NUM_BYTES)
         self.represents = represents
         self.pp_bit = pp_bit
+        
+    def __eq__(self, other):
+        return self.label == other.label
 
     def __repr__(self):
         return str(self.to_base64())

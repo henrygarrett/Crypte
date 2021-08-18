@@ -5,7 +5,7 @@ techniques are implemented.
 
 """
 
-import os
+#import os
 import pickle
 import new_gabes.settings as settings
 import hashlib
@@ -36,7 +36,8 @@ class Gate(object):
     gates = {
         'AND': lambda in1, in2: in1 & in2,
         'XOR': lambda in1, in2: in1 ^ in2,
-        'OR': lambda in1, in2: in1 | in2
+        'OR': lambda in1, in2: in1 | in2,
+        'NOT': lambda in1, in2: ~(in1 & in2)
     }
 
     def __init__(self, gate_type, create_left=True, create_right=True):

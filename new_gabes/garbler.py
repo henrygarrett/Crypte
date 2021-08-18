@@ -24,128 +24,193 @@ import pickle
 import new_gabes.network as net
 
 from new_gabes.circuit import Circuit
-from new_gabes.utils import ask_for_inputs
-from new_gabes.ot import garbler_ot
-from new_gabes.label import Label
-
-def garbler(circ):
-    """
-        The main function of the application for the garbler. For
-        more information on the process, see above.
+#from new_gabes.utils import ask_for_inputs
+from cryptography.hazmat.primitives.asymmetric import rsa
+from random import randint
+from cryptography.hazmat.backends import default_backend
+from new_gabes.network import send_data, receive_data
 
 
-        :param args: the arguments from the command line interface
-        :return: the output of the circuit
-        :rtype: bool
-
-    """
-    print("Welcome, garbler. Waiting for the evaluator...")
-    circ = Circuit(circ)
-    print("Circuit created...")
-    identifiers = hand_over_wire_identifiers(circ)
-    print(identifiers)
-    #if circ.identifiers:
-        #inputs = [{x: y for x, y in zip(circ.identifiers, args.bits)}]
-    #else:
-    #inputs = ask_for_inputs(identifiers)
-    #print(inputs)
-    inputs = {'1':0, '2':1,'3':1}
-    hand_over_labels(circ, inputs)
-    hand_over_cleaned_circuit(circ)
-    name = '1066'
-    with open('send_data' + name, 'wb') as data_file:
-            pickle.dump(Label(1),data_file)
-    final_output = learn_output(name, circ)
-    print("The final output of the circuit is: {}".format(final_output))
-    return final_output
-
-
-def hand_over_wire_identifiers(circ):
-    """
-        Sends the wire identifiers to the evaluator.
-
-        :param client: the client is the evaluator
-        :param circ: the circuit to which the wires belong
-        :return: the identifiers of the input wires
-        :rtype: list(str)
-
-    """
-    identifiers = [wire.identifier for wire in circ.get_input_wires()]
-    with open('hand_over_wire_identifiers.txt', 'w') as data_set_file:
-                data_set_file.write(str(identifiers))
-    return identifiers
-
-
-def hand_over_cleaned_circuit(circ):
-    """
-        Sends a clean circuit (in which every label's *represents*
-        flag has been deleted) to the evaluator.
-
-        :param client: the client is the evaluator
-        :param circ: the circuit in question
-
-    """
-    new_circ = circ.clean()
-    with open('hand_over_cleaned_circuit', 'wb') as data_file:
-            pickle.dump(new_circ, data_file)
-
-
-def hand_over_labels(circ, garbler_inputs):
-    """
-        Sends the input labels of the circuit to the evaluator. The labels
-        that belong to the garbler can be sent without any modification.
-        In order for the evaluator to learn his labels, he must acquire
-        them through the oblivious transfer protocol, in which the
-        garbler inputs the two possible labels, the evaluator inputs
-        his choice of truth value, and the evaluator learns which
-        label corresponds to his truth value without the garbler learning
-        his choice and without the evaluator learning both labels.
-
-        :param client: the client is the evaluator
-        :param circ: the circuit in question
-        :param garbler_inputs: the inputs the garbler provides
-
-    """
-    identifiers = set(wire.identifier for wire in circ.get_input_wires())
-    if not set(garbler_inputs.keys()).issubset(set(identifiers)):
-        raise ValueError('You have supplied a wire '
-                         'identifier not in the circuit.')
-    for wire in circ.get_input_wires():
-        if wire.identifier in garbler_inputs:
-            chosen_bit = garbler_inputs[wire.identifier]
+class Alice():
+    def __init__(self):
+        self.__true_label = None
+        self.__false_label = None
+        self.__circ = None
+        self.__garbler_inputs = None
+        self.__d = None
+        self.__circ_name = 'circuit.txt'
+        self._inputs = {'1': 1}
+    def alice1(self, circ_name = None, inputs = None):
+        """
+            The main function of the application for the garbler. For
+            more information on the process, see above.
+    
+    
+            :param args: the arguments from the command line interface
+            :return: the output of the circuit
+            :rtype: bool
+    
+        """
+        if circ_name == None:
+            circ_name = self.__circ_name
+        self.__circ = Circuit(circ_name)
+        identifiers = self.hand_over_wire_identifiers()
+        if inputs == None:
+            self.__garbler_inputs = self._inputs
+            #self.__garbler_inputs = ask_for_inputs(identifiers)
+        else:
+            self.__garbler_inputs = inputs
+        
+        return identifiers
+        
+    # def alice2(self):
+    #     return self.hand_over_labels()
+    
+    def alice3(self):
+        return self.hand_over_cleaned_circuit()
+        
+    def alice4(self, output_label):
+        final_output = self.learn_output(output_label)
+        return final_output
+    
+    
+    def hand_over_wire_identifiers(self):
+        """
+            Sends the wire identifiers to the evaluator.
+    
+            :param client: the client is the evaluator
+            :param circ: the circuit to which the wires belong
+            :return: the identifiers of the input wires
+            :rtype: list(str)
+    
+        """
+        circ = self.__circ
+        identifiers = [wire.identifier for wire in circ.get_input_wires()]
+        # with open('hand_over_wire_identifiers.txt', 'w') as data_set_file:
+        #             data_set_file.write(str(identifiers))
+        return identifiers
+    
+    
+    def hand_over_cleaned_circuit(self):
+        """
+            Sends a clean circuit (in which every label's *represents*
+            flag has been deleted) to the evaluator.
+    
+            :param client: the client is the evaluator
+            :param circ: the circuit in question
+    
+        """
+        circ = self.__circ
+        new_circ = circ.clean()
+        # with open('hand_over_cleaned_circuit', 'wb') as data_file:
+        #         pickle.dump(new_circ, data_file)
+        return new_circ
+    
+    # def hand_over_labels(self):
+    #     """
+    #         Sends the input labels of the circuit to the evaluator. The labels
+    #         that belong to the garbler can be sent without any modification.
+    #         In order for the evaluator to learn his labels, he must acquire
+    #         them through the oblivious transfer protocol, in which the
+    #         garbler inputs the two possible labels, the evaluator inputs
+    #         his choice of truth value, and the evaluator learns which
+    #         label corresponds to his truth value without the garbler learning
+    #         his choice and without the evaluator learning both labels.
+    
+    #         :param client: the client is the evaluator
+    #         :param circ: the circuit in question
+    #         :param garbler_inputs: the inputs the garbler provides
+    
+    #     """
+    #     circ = self.__circ
+    #     # garbler_inputs = self.__garbler_inputs
+    #     # identifiers = set(wire.identifier for wire in circ.get_input_wires())
+    #     # if not set(garbler_inputs.keys()).issubset(set(identifiers)):
+    #     #     raise ValueError('You have supplied a wire '
+    #     #                      'identifier not in the circuit.')
+    #     # for wire in circ.get_input_wires():
+    #     #     if wire.identifier in garbler_inputs:
+    #     #         # chosen_bit = garbler_inputs[wire.identifier]
+    #     #         # if chosen_bit == '1':
+    #     #         #     secret_label = wire.true_label
+    #     #         # else:
+    #     #         #     secret_label = wire.false_label
+                    
+    #     #         # with open('hand_over_labels', 'wb') as file:
+    #     #         #     pickle.dump(secret_label, file)
+    #     #         # net.send_datap('secret_label',secret_label)
+    #     #         # return secret_label
+    #     #     else:
+    #     #         self.__false_label = copy.deepcopy(wire.false_label)
+    #     #         self.__true_label = copy.deepcopy(wire.true_label)
+    #     #         # Clean before sending
+    #     #         self.__false_label.represents = self.__true_label.represents = None
+    #     #         return None
+    
+    
+    def send_label(self, identifier):
+        for item in self.__circ.get_input_wires():
+            if identifier == item.identifier:
+                wire = item
+                break
+        if wire.identifier not in self.__garbler_inputs:
+            raise Exception('identifier doesn\'t appear in garbler or evaluator input lists')
+        else:
+            chosen_bit = self.__garbler_inputs[wire.identifier]
             if chosen_bit == '1':
                 secret_label = wire.true_label
             else:
                 secret_label = wire.false_label
-                
-            with open('hand_over_labels', 'wb') as file:
-                pickle.dump(secret_label, file)
-            net.send_datap('secret_label',secret_label)
-            #net.wait_for_ack(client)
+            return secret_label
+    
+    def set_labels(self, identifier):
+        for item in self.__circ.get_input_wires():
+            if identifier == item.identifier:
+                wire = item
+                break
+        if wire.identifier in self.__garbler_inputs:
+            raise Exception('identifier  appears in both garbler or evaluator input lists')
         else:
-            false_label = copy.deepcopy(wire.false_label)
-            true_label = copy.deepcopy(wire.true_label)
+            self.__false_label = copy.deepcopy(wire.false_label)
+            self.__true_label = copy.deepcopy(wire.true_label)
             # Clean before sending
-            false_label.represents = true_label.represents = None
-            garbler_ot(false_label, true_label)
-
-
-def learn_output(name, circ):
-    """
-        Learns the final truth value of the circuit by comparing the label that
-        was handed to him by the evaluator to the two labels in the root of the
-        tree (i.e. the final gate).
-
-        :param client: the client is the evaluator
-        :param circ: the circuit in question
-        :return: the output of the circuit
-        :rtype: bool
-
-    """
-    output_label = net.receive_data('secret_output')
-    output_gate = circ.tree.name
-    out1 = output_gate.output_wire.true_label.to_base64()
-    out2 = output_label.to_base64()
-    output = out1 == out2
-    net.send_data('output',output)
-    return output
+            self.__false_label.represents = self.__true_label.represents = None
+            
+            
+            
+            
+    def learn_output(self, output_label):
+        """
+            Learns the final truth value of the circuit by comparing the label that
+            was handed to him by the evaluator to the two labels in the root of the
+            tree (i.e. the final gate).
+    
+            :param client: the client is the evaluator
+            :param circ: the circuit in question
+            :return: the output of the circuit
+            :rtype: bool
+    
+        """
+        circ = self.__circ
+        output_gate = circ.tree.name
+        out1 = output_gate.output_wire.true_label.to_base64()
+        out2 = output_label.to_base64()
+        output = out1 == out2
+        return output
+    
+    def garbot1(self):
+        private_key = rsa.generate_private_key(public_exponent=65537,key_size=512,backend=default_backend())
+        d = private_key.private_numbers().d
+        public_key = private_key.public_key()
+        m, f = public_key.public_numbers().n, public_key.public_numbers().e
+        y0, y1 = [randint(2, m // 2) for _ in range(2)]
+        self.__d =  d
+        return y0, y1, m, f
+        
+    def garbot2(self, v, x0, x1, n):
+        k0, k1 = [pow((v - x), self.__d, n) for x in (x0, x1)]
+        bytes_m0 = pickle.dumps(self.__true_label)
+        bytes_m1 = pickle.dumps(self.__false_label)
+        m0 = int.from_bytes(bytes_m0, byteorder='big')
+        m1 = int.from_bytes(bytes_m1, byteorder='big')
+        return m0 + k0, m1 + k1, len(bytes_m0), len(bytes_m1)

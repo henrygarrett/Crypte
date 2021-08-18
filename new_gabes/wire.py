@@ -49,7 +49,10 @@ class Wire(object):
             self.true_label = Label(True, pp_bit=not b)
         if settings.FREE_XOR or settings.HALF_GATES:
             self.true_label.label = xor(self.false_label.label, settings.R)
-
+            
+    def __eq__(self, other):
+        return self.identifier == other.identifier
+    
     def __str__(self):
         if self.identifier:
             return "Wire {}".format(self.identifier)

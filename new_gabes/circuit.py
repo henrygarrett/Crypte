@@ -84,7 +84,6 @@ class Circuit(object):
         gate.garble()
 
         if not parent:
-            print('Here')
             return node
 
     def _build_gate(self, parent, left, gate_type, right):
