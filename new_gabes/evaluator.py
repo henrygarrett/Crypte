@@ -4,10 +4,8 @@
     see the Garbler's section.
 """
 import pickle
-import new_gabes.network as net
 from new_gabes.utils import ask_for_inputs
 from random import randint
-from new_gabes.network import send_data, receive_data
 from new_gabes.garbler import Alice
 class Bob():
     def __init__(self):
@@ -31,11 +29,10 @@ class Bob():
             inputs = ask_for_inputs(identifiers)
         else:
             inputs = inputs
-        #labels = alice.alice2()
         labels = self.request_labels(identifiers, inputs, alice)
-        circ = alice.alice3()
+        circ = alice.alice2()
         secret_output = circ.reconstruct(labels)
-        final_output = alice.alice4(secret_output)
+        final_output = alice.alice3(secret_output)
         print("The final output of the circuit is: {}".format(final_output))
         return final_output
     
@@ -103,23 +100,6 @@ class Bob():
             labels.append(secret_label)
         return labels
     
-    
-    # def learn_output(self, secret_output):
-    #     """
-    #         Sends the final label and learns the final truth value
-    #         from the garbler.
-    
-    #         :param sock: the socket from which it will receive the data
-    #         :param secret_output: the final label of the circuit
-    #         :return: the output of the circuit
-    #         :rtype: bool
-    
-    #     """
-    #     #net.send_data('secret_output',secret_output)
-    #     final_output = net.receive_data('output')
-    #     return final_output
-    
-    
     def evalot1(self, x0, x1, n, e):
         b =  self.__chosen_bit
         k = randint(2, n // 2)
@@ -127,6 +107,7 @@ class Bob():
         w = (chosen_x + pow(k, e, n)) % n
         self.__k = k
         return w
+
     def evalot2(self, t0, t1, size_m0, size_m1):
         b = self.__chosen_bit
         chosen_t = t1 if b == '1' else t0

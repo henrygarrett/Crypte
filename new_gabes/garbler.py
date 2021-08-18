@@ -21,14 +21,10 @@
 """
 import copy
 import pickle
-import new_gabes.network as net
-
 from new_gabes.circuit import Circuit
-#from new_gabes.utils import ask_for_inputs
 from cryptography.hazmat.primitives.asymmetric import rsa
 from random import randint
 from cryptography.hazmat.backends import default_backend
-from new_gabes.network import send_data, receive_data
 
 
 class Alice():
@@ -57,19 +53,15 @@ class Alice():
         identifiers = self.hand_over_wire_identifiers()
         if inputs == None:
             self.__garbler_inputs = self._inputs
-            #self.__garbler_inputs = ask_for_inputs(identifiers)
         else:
             self.__garbler_inputs = inputs
         
         return identifiers
-        
-    # def alice2(self):
-    #     return self.hand_over_labels()
-    
-    def alice3(self):
+
+    def alice2(self):
         return self.hand_over_cleaned_circuit()
         
-    def alice4(self, output_label):
+    def alice3(self, output_label):
         final_output = self.learn_output(output_label)
         return final_output
     
@@ -86,8 +78,6 @@ class Alice():
         """
         circ = self.__circ
         identifiers = [wire.identifier for wire in circ.get_input_wires()]
-        # with open('hand_over_wire_identifiers.txt', 'w') as data_set_file:
-        #             data_set_file.write(str(identifiers))
         return identifiers
     
     
@@ -102,52 +92,9 @@ class Alice():
         """
         circ = self.__circ
         new_circ = circ.clean()
-        # with open('hand_over_cleaned_circuit', 'wb') as data_file:
-        #         pickle.dump(new_circ, data_file)
         return new_circ
     
-    # def hand_over_labels(self):
-    #     """
-    #         Sends the input labels of the circuit to the evaluator. The labels
-    #         that belong to the garbler can be sent without any modification.
-    #         In order for the evaluator to learn his labels, he must acquire
-    #         them through the oblivious transfer protocol, in which the
-    #         garbler inputs the two possible labels, the evaluator inputs
-    #         his choice of truth value, and the evaluator learns which
-    #         label corresponds to his truth value without the garbler learning
-    #         his choice and without the evaluator learning both labels.
-    
-    #         :param client: the client is the evaluator
-    #         :param circ: the circuit in question
-    #         :param garbler_inputs: the inputs the garbler provides
-    
-    #     """
-    #     circ = self.__circ
-    #     # garbler_inputs = self.__garbler_inputs
-    #     # identifiers = set(wire.identifier for wire in circ.get_input_wires())
-    #     # if not set(garbler_inputs.keys()).issubset(set(identifiers)):
-    #     #     raise ValueError('You have supplied a wire '
-    #     #                      'identifier not in the circuit.')
-    #     # for wire in circ.get_input_wires():
-    #     #     if wire.identifier in garbler_inputs:
-    #     #         # chosen_bit = garbler_inputs[wire.identifier]
-    #     #         # if chosen_bit == '1':
-    #     #         #     secret_label = wire.true_label
-    #     #         # else:
-    #     #         #     secret_label = wire.false_label
-                    
-    #     #         # with open('hand_over_labels', 'wb') as file:
-    #     #         #     pickle.dump(secret_label, file)
-    #     #         # net.send_datap('secret_label',secret_label)
-    #     #         # return secret_label
-    #     #     else:
-    #     #         self.__false_label = copy.deepcopy(wire.false_label)
-    #     #         self.__true_label = copy.deepcopy(wire.true_label)
-    #     #         # Clean before sending
-    #     #         self.__false_label.represents = self.__true_label.represents = None
-    #     #         return None
-    
-    
+
     def send_label(self, identifier):
         for item in self.__circ.get_input_wires():
             if identifier == item.identifier:
@@ -173,12 +120,8 @@ class Alice():
         else:
             self.__false_label = copy.deepcopy(wire.false_label)
             self.__true_label = copy.deepcopy(wire.true_label)
-            # Clean before sending
             self.__false_label.represents = self.__true_label.represents = None
-            
-            
-            
-            
+
     def learn_output(self, output_label):
         """
             Learns the final truth value of the circuit by comparing the label that
