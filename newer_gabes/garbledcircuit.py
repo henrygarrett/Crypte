@@ -6,7 +6,6 @@ Created on Wed Aug 18 12:30:23 2021
 """
 from cryptography.fernet import Fernet
 from newer_gabes.garbledgate import GarbledGate
-from newer_gabes.wire import Wire
 import copy
 class GarbledCircuit:
     """A representation of a garbled circuit.
@@ -78,6 +77,7 @@ class GarbledCircuit:
     def clean(self):
         circ = copy.deepcopy(self)
         for gate in self.gates:
+            gate.garble
             gate.input = gate.output = None
         return circ
     
@@ -101,16 +101,19 @@ class GarbledCircuit:
 
         """
         for gate in self.gates:
+            print(gate)
             self.chosen_label(gate, labels)
                 
                 
                 
         return [gate.chosen_label for gate in self.output_gates]
     def chosen_label(self, gate, labels):
-                if gate.is_output(self):
+                if gate.is_input(self):
+                    print(labels)
                     garblers_label = labels.pop(0)
                     evaluators_label = labels.pop(1)
                 else:
+                    print('input type: ' + str(type(gate.input[0])))
                     garblers_label = self.chosen_label(gate.input[0], labels)
                     evaluators_label = self.chosen_label(gate.input[1],labels)
                 output_label = gate.ungarble(garblers_label, evaluators_label)

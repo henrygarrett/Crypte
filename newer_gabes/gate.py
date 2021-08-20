@@ -37,7 +37,7 @@ class Gate(object):
         'AND': lambda in1, in2: in1 & in2,
         'XOR': lambda in1, in2: in1 ^ in2,
         'OR': lambda in1, in2: in1 | in2,
-        'NOT': lambda in1, in2: ~(in1 & in2)
+        'NOTAND': lambda in1, in2: ~in1 & in2
     }
 
     def __init__(self, gate_type, create_left=True, create_right=True):
@@ -83,13 +83,14 @@ class Gate(object):
             as the evaluator needs to try and decrypt the four possible entries
             in the boolean table.
         """
-        for left_label in self.left_wire.labels():
-            for right_label in self.right_wire.labels():
-                key1 = Fernet(left_label.to_base64())
-                key2 = Fernet(right_label.to_base64())
-                in1, in2 = left_label.represents, right_label.represents
+        print(self.gate_type)
+        for label1 in self.input[0].labels():
+            for label2 in self.input[1].labels():
+                key1 = Fernet(label1.to_base64())
+                key2 = Fernet(label2.to_base64())
+                in1, in2 = label1.represents, label2.represents
                 logic_value = self.evaluate_gate(in1, in2)
-                output_label = self.output_wire.get_label(logic_value)
+                output_label = self.output.get_label(logic_value)
                 pickled = pickle.dumps(output_label)
                 table_entry = key1.encrypt(key2.encrypt(pickled))
                 self.table.append(table_entry)
@@ -517,6 +518,9 @@ class Gate(object):
         """
         g = self.gates[self.gate_type]
         return g(input1, input2)
+    def evaluate_not_gate(self, input):
+        g = self.gates[self.gate_type]
+        return g(input)
 
     def wires(self):
         """

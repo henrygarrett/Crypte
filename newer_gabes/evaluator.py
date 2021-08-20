@@ -12,7 +12,6 @@ class Bob():
         alice = Alice()
         identifiers = alice.start()
         labels = self.request_labels(identifiers, self.__inputs, alice)
-        print(labels)
         circ = alice.hand_over_cleaned_circuit()
         secret_output = circ.reconstruct(labels)
         final_output = alice.learn_output(secret_output)

@@ -14,7 +14,7 @@ circuit = {
         {"id": 5, "type": "AND", "in": [1, 3]},
         {"id": 6, "type": "XOR", "in": [2, 4]},
         {"id": 7, "type": "OR", "in": [5, 6]},
-        {"id": 8, "type": "NOT", "in": [6]}
+        {"id": 8, "type": "NOTAND", "in": [5,6]}
       ]
     }
   
