@@ -131,25 +131,11 @@ class GarbledGate(Gate):
             if (self.input[0] or self.input[1]) is other.output:
                 return False
         return True
-    def classical_garble(self):
-        """
-            The most simple type of garbling. In classical garbled
-            circuits, the whole boolean table is obfuscated by
-            encrypting the output label using the input labels as keys.
-            After this the table is shuffled (or *garbled*) so that
-            the evaluator can't know more than one output label. For
-            more information see `the paper
-            <https://dl.acm.org/citation.cfm?id=1382944>`_.
+    def garble(self):
 
-            Note that a *Fernet* scheme is used since this method
-            relies on knowing whether decryption was successful or not,
-            as the evaluator needs to try and decrypt the four possible entries
-            in the boolean table.
-        """
+        check = []
         for label1 in self.input[0].labels():
-            print(label1)
             for label2 in self.input[1].labels():
-                print(label2)
                 key1 = Fernet(label1.to_base64())
                 key2 = Fernet(label2.to_base64())
                 in1, in2 = label1.represents, label2.represents
@@ -158,25 +144,18 @@ class GarbledGate(Gate):
                 pickled = pickle.dumps(output_label)
                 table_entry = key1.encrypt(key2.encrypt(pickled))
                 self.table.append(table_entry)
+                check.append(str(label1)[:4] + ' ' + str(label2)[:4])
+        print(check)
 
         shuffle(self.table)
     def ungarble(self, garblers_label, evaluators_label):
-        """
-            The classical evaluation, in which the evaluator
-            tries the four possible table entries until one of them
-            decrypts the cipher.
-
-            :param garblers_label: the chosen label by the garbler
-            :param evaluators_label: the chosen label by the evaluator
-            :return: the correct output label
-            :rtype: :class:`Label`
-        """
+        print(garblers_label)
+        print(evaluators_label)
         for table_entry in self.table:
             try:
-                key1 = Fernet(garblers_label.to_base64())
-                key2 = Fernet(evaluators_label.to_base64())
-                output_label = pickle.loads(key2.decrypt(
-                                            key1.decrypt(table_entry)))
+                key2 = Fernet(garblers_label.to_base64())
+                key1 = Fernet(evaluators_label.to_base64())
+                output_label = pickle.loads(key1.decrypt(key2.decrypt(table_entry)))
             except InvalidToken:
                 # Wrong table entry, try again
                 pass

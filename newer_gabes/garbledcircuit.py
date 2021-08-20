@@ -77,7 +77,7 @@ class GarbledCircuit:
     def clean(self):
         circ = copy.deepcopy(self)
         for gate in self.gates:
-            gate.garble
+            gate.garble()
             gate.input = gate.output = None
         return circ
     
@@ -110,12 +110,12 @@ class GarbledCircuit:
     def chosen_label(self, gate, labels):
                 if gate.is_input(self):
                     print(labels)
+                    evaluators_label = labels.pop(0)
                     garblers_label = labels.pop(0)
-                    evaluators_label = labels.pop(1)
                 else:
                     print('input type: ' + str(type(gate.input[0])))
-                    garblers_label = self.chosen_label(gate.input[0], labels)
-                    evaluators_label = self.chosen_label(gate.input[1],labels)
+                    garblers_label = self.chosen_label(gate.input[1], labels)
+                    evaluators_label = self.chosen_label(gate.input[0],labels)
                 output_label = gate.ungarble(garblers_label, evaluators_label)
                 gate.chosen_label = output_label
                 return gate.chosen_label
