@@ -212,7 +212,7 @@ def main():
     a_inputs = alice.send_inputs() # Sends alice's inputs
 
     # Round 2: Bob
-    b_inputs = bob.receive_circuits_and_inputs(circuit, a_inputs) # Bob receives inputs and keys and prepares for OT
+    b_inputs = bob.receive_circuits_and_inputs(circuit, a_inputs) # Bob receives circuit and alices inputs and prepares for OT
     b_inputs_encr = {}
 
     # Perform OT over the inputs
@@ -222,5 +222,5 @@ def main():
         c1, e0, e1 = alice.ot_receive(w, h0)
         b_inputs_encr[w] = pickle.loads(bob.ot_receive(b, c1, e0, e1))
 
-    res = bob.evaluate(a_inputs, b_inputs_encr)
+    res = bob.evaluate(a_inputs, b_inputs_encr) # Bob evaluates circuit on encrypted inputs
     print("Circuit Output", res) # Final outputs
