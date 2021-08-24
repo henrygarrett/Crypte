@@ -196,7 +196,7 @@ class Bob:
         logging.debug("Sending circuit evaluation")
         return result
 
-
+# Simple 2-input/output AND test
 def main():
     circuits = "../circuits/and.json"
 
@@ -224,5 +224,3 @@ def main():
 
     res = bob.evaluate(a_inputs, b_inputs_encr)
     print("Circuit Output", res) # Final outputs
-
-main()
