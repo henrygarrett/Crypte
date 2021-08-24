@@ -255,11 +255,30 @@ def test_group_by_count_encoded(verbose=True):
 
     assert result == true_value
     return True
+
+def test_count_distinct(verbose=True):
+    input_data = [AS.program_executor.public_key.lab_encrypt(10),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(1),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(11),AS.program_executor.public_key.lab_encrypt(23)]
+    result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count_distinct(input_data, CSP))
+
+    if verbose:
+        print("TEST: Count Distinct")
+        print("Query Result:", result)
+        print("True Value:", 4)
+
+    assert result == 4
+    return True
+
 def test_laplace(verbose=True):
     data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     print(AS.program_executor.laplace(data, 5, CSP))# 5 seems to give reasonable noise on output for our values +/- 2ish
     
-
+def test_noisy_max(verbose=True):
+     input_data = [AS.program_executor.public_key.lab_encrypt(100),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(3),AS.program_executor.public_key.lab_encrypt(5),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(2)]
+     
+     if verbose:
+        print("TEST: Count Distinct")
+        print("Query Result:", AS.program_executor.noisy_max(input_data, 5, CSP, 3))
+        print("True Value:", CSP.decrypt_bit_vector(input_data))
 
 
 # # --- Basic encryption/encoding tests ---
@@ -281,4 +300,6 @@ def test_laplace(verbose=True):
 # test_cross_product()
 # test_group_by_count()
 # test_group_by_count_encoded()
-test_laplace()
+#test_laplace()
+#test_count_distinct()
+test_noisy_max()

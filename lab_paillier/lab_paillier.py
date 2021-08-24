@@ -86,6 +86,19 @@ class LabEncryptedNumber(paillier.EncryptedNumber):
 
     def _lab_raw_add(self, e_a, e_b):
         return e_a * e_b % self.public_key.nsquare
+    
+    def _lab_subtract_encrypted(self, other):
+        if self.public_key != other.public_key:
+            raise ValueError("Attempted to add numbers encrypted against "
+                             "different public keys!")
+
+        # In order to add two numbers, their exponents must match.
+        a, b = self, other
+        if a.exponent > b.exponent:
+            a = self.decrease_exponent_to(b.exponent)
+        elif a.exponent < b.exponent:
+            b = b.decrease_exponent_to(a.exponent)
+        return LabEncryptedNumber(a.public_key, a.message_obfuscated - b.message_obfuscated, a.label_encrypted - b.label_encrypted)
 
 
 def generate_lab_paillier_keypair(private_keyring=None, n_length=DEFAULT_KEYSIZE):

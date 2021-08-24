@@ -4,11 +4,13 @@
 from .PrivacyEngine import PrivacyEngine
 from .KeyManager import KeyManager
 import numpy as np
+import random
 
 class CryptographicServiceProvider():
     def __init__(self, epsilon_budget, generate_keys=False):
         self.privacy_engine = PrivacyEngine(epsilon_budget)
         self.key_manager = KeyManager(generate_keys)
+        self.__r = None
 
     def __str__(self):
         return "CryptographicServiceProvider" + str(
@@ -50,8 +52,35 @@ class CryptographicServiceProvider():
                     return_vector[i].append(1)
         return_vector_encrypted = [[public_key.lab_encrypt(bit) for bit in value] for value in return_vector]
         return return_vector_encrypted
+    
+    def count_distinct(self, vector_masked):
+        vector_decrypted = [self.key_manager.private_key.lab_decrypt(i) for i in vector_masked]
+        return vector_decrypted
+    def random_r(self):
+        r = random.randint(0,10**40)
+        self.__r = r
+        return self.key_manager.public_key.lab_encrypt(r)
+    def garbled_circuitcd(self, M, vector_decrypted):
+        r = self.__r
+        vector_clear = [vector_decrypted[i] - M[i] for i in range(len(M))]
+        count_masked = np.count_nonzero(vector_clear) + r
+        return count_masked
+    
+    
     def laplace(self, data, sensitivity, privacy_parameter):
         if self.privacy_engine.is_program_allowed(privacy_parameter):
             return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2*sensitivity)/privacy_parameter) for value in data]
         else:
             raise Exception('Privacy Budget Exceeded')
+
+
+    def noisy_max(self, data, sensitivity, privacy_parameter, how_many, CSP):
+        if self.privacy_engine.is_program_allowed(privacy_parameter):
+            return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2*how_many*sensitivity)/privacy_parameter) for value in data]
+        else:
+            raise Exception('Privacy Budget Exceeded')
+            
+    def garbled_circuitnm(self, M, vector_decrypted, how_many):
+        vector_clear = [vector_decrypted[i] - M[i] for i in range(len(vector_decrypted))]
+        indices = sorted(range(len(vector_clear)), key=lambda i: vector_clear[i])[-how_many:]
+        return indices

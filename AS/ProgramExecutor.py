@@ -93,10 +93,23 @@ class ProgramExecutor():
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(encrypted_data))
         return [rightRotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]
     
-    def count_distinct(self):
-        pass
-    
+    def count_distinct(self, input_vector, CSP):
+        M = [random.randint(0,10**10) for _ in range(len(input_vector))]
+        vector_masked = [input_vector[i]._lab_add_encrypted(self.public_key.lab_encrypt(M[i])) for i in range(len(M))]
+        vector_decrypted = CSP.count_distinct(vector_masked)
+        r_enc = CSP.random_r()
+        count_masked = CSP.garbled_circuitcd(M, vector_decrypted)
+        count_encrypted = self.public_key.lab_encrypt(count_masked)._lab_subtract_encrypted(r_enc)
+        return count_encrypted
     def laplace(self, data, privacy_parameter, CSP):
         data = data if type(data) == list else [data]
         noisy_data = [value._lab_add_encrypted(self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*self.sensitivity)/privacy_parameter))) for value in data]
         return CSP.laplace(noisy_data, self.sensitivity, privacy_parameter)
+    
+    def noisy_max(self, data, privacy_parameter, CSP, how_many):
+         M = [random.randint(0,10**10) for _ in range(len(data))]
+         M_enc = [self.public_key.lab_encrypt(m) for m in M]
+         noise = [self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*how_many*self.sensitivity)/privacy_parameter)) for _ in range(len(data))]
+         noisy_data = [data[i]._lab_add_encrypted(noise[i])._lab_add_encrypted(M_enc[i]) for i in range(len(data))]
+         data_decrypted = CSP.noisy_max(noisy_data, self.sensitivity, privacy_parameter, how_many, CSP)
+         return CSP.garbled_circuitnm(M, data_decrypted, how_many)
