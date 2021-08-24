@@ -131,6 +131,7 @@ class GarbledGate(Gate):
             if (self.input[0] or self.input[1]) is other.output:
                 return False
         return True
+
     def garble(self):
 
         check = []
@@ -148,6 +149,7 @@ class GarbledGate(Gate):
         print(check)
 
         shuffle(self.table)
+
     def ungarble(self, garblers_label, evaluators_label):
         print(garblers_label)
         print(evaluators_label)

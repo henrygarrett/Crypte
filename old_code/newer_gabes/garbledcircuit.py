@@ -7,6 +7,7 @@ Created on Wed Aug 18 12:30:23 2021
 from cryptography.fernet import Fernet
 from newer_gabes.garbledgate import GarbledGate
 import copy
+
 class GarbledCircuit:
     """A representation of a garbled circuit.
 

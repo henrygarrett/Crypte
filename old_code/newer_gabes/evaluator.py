@@ -1,6 +1,7 @@
 import pickle
 from random import randint
 from newer_gabes.garbler import Alice
+
 class Bob():
     def __init__(self):
         self.__chosen_bit = None

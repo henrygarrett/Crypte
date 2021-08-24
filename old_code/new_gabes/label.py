@@ -8,7 +8,7 @@ of the bitstring, head to :mod:`gabes.settings`.
 
 import os
 import base64
-import newer_gabes.settings as settings
+import new_gabes.settings as settings
 
 
 class Label(object):
@@ -41,10 +41,10 @@ class Label(object):
         return self.label == other.label
 
     def __repr__(self):
-        return str(self.to_base64())
+        return self.represents
 
     def __str__(self):
-        return str(self.to_base64())
+        return self.represents
 
     def __int__(self):
         """
