@@ -58,7 +58,7 @@ class CryptographicServiceProvider():
         return vector_decrypted
 
     def random_r(self):
-        r = random.randint(0,10**40)
+        r = random.randint(0,10**9)
         self.__r = r
         return self.key_manager.public_key.lab_encrypt(r)
 

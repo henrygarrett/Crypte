@@ -198,10 +198,11 @@ class Bob:
 
 # Simple 2-input/output AND test
 def main():
-    circuits = "../circuits/and.json"
-
-    a_input = [0, 1]
-    b_input = [1, 1]
+    circuits = "../circuits/32bit_subtractor.json"
+    a = '{:032b}'.format(137836)
+    b = '{:032b}'.format(78437)
+    a_input = [int(i) for i in a]
+    b_input = [int(i) for i in b]
 
     alice = Alice(a_input, circuits)
     bob = Bob(b_input)
@@ -223,4 +224,7 @@ def main():
         b_inputs_encr[w] = pickle.loads(bob.ot_receive(b, c1, e0, e1))
 
     res = bob.evaluate(a_inputs, b_inputs_encr) # Bob evaluates circuit on encrypted inputs
-    print("Circuit Output", res) # Final outputs
+    print("Circuit Output: ", list(res.values())) # Final outputs
+    print('True Result: ', [int(i) for i in '{:032b}'.format(137836-78437)])
+    print(list(res.values()) == [int(i) for i in '{:032b}'.format(137836-78437)][::-1])
+main()

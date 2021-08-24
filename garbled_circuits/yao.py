@@ -104,7 +104,8 @@ class GarbledGate:
             "XOR": lambda b1, b2: b1 ^ b2,
             "NOR": lambda b1, b2: not (b1 or b2),
             "NAND": lambda b1, b2: not (b1 and b2),
-            "XNOR": lambda b1, b2: not (b1 ^ b2)
+            "XNOR": lambda b1, b2: not (b1 ^ b2),
+            "NOTAND": lambda b1, b2: (not b1) and b2
         }
 
         # NOT gate is a special case since it has only one input
