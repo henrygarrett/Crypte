@@ -270,8 +270,10 @@ def test_count_distinct(verbose=True):
 
 def test_laplace(verbose=True):
     data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
-    print(AS.program_executor.laplace(data, 5, CSP))# 5 seems to give reasonable noise on output for our values +/- 2ish
-    
+    if verbose:
+        print("TEST: Laplace")
+        print("Query Result:", AS.program_executor.laplace(data, 5, CSP))# 5 seems to give reasonable noise on output for our values +/- 2ish
+        print("True Value: [3,2]")
 def test_noisy_max(verbose=True):
      input_data = [AS.program_executor.public_key.lab_encrypt(100),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(3),AS.program_executor.public_key.lab_encrypt(5),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(2)]
      
@@ -300,6 +302,7 @@ def test_noisy_max(verbose=True):
 # test_cross_product()
 # test_group_by_count()
 # test_group_by_count_encoded()
-#test_laplace()
+test_laplace()
 #test_count_distinct()
+test_noisy_max()
 test_noisy_max()
