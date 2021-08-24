@@ -56,10 +56,12 @@ class CryptographicServiceProvider():
     def count_distinct(self, vector_masked):
         vector_decrypted = [self.key_manager.private_key.lab_decrypt(i) for i in vector_masked]
         return vector_decrypted
+
     def random_r(self):
         r = random.randint(0,10**40)
         self.__r = r
         return self.key_manager.public_key.lab_encrypt(r)
+
     def garbled_circuitcd(self, M, vector_decrypted):
         r = self.__r
         vector_clear = [vector_decrypted[i] - M[i] for i in range(len(M))]
@@ -74,13 +76,13 @@ class CryptographicServiceProvider():
             raise Exception('Privacy Budget Exceeded')
 
 
-    def noisy_max(self, data, sensitivity, privacy_parameter, how_many, CSP):
+    def noisy_max(self, data, sensitivity, privacy_parameter, k):
         if self.privacy_engine.is_program_allowed(privacy_parameter):
-            return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2*how_many*sensitivity)/privacy_parameter) for value in data]
+            return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2 * k * sensitivity) / privacy_parameter) for value in data]
         else:
             raise Exception('Privacy Budget Exceeded')
             
-    def garbled_circuitnm(self, M, vector_decrypted, how_many):
+    def garbled_circuitnm(self, M, vector_decrypted, k):
         vector_clear = [vector_decrypted[i] - M[i] for i in range(len(vector_decrypted))]
-        indices = sorted(range(len(vector_clear)), key=lambda i: vector_clear[i])[-how_many:]
+        indices = sorted(range(len(vector_clear)), key=lambda i: vector_clear[i], reverse=True)[:k]
         return indices

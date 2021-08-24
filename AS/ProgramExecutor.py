@@ -10,6 +10,9 @@ class ProgramExecutor():
         self.num_attr = num_attr # Number of attributes in the dataset
         self.sensitivity = 1
         # Both of the above are needed for filtering
+
+    def reset_sensitivity(self):
+        self.sensitivity = 1
     
     def cross_product(self, encrypted_data, attribute1, attribute2, CSP):
         new_data_set = copy.deepcopy(encrypted_data)
@@ -101,15 +104,16 @@ class ProgramExecutor():
         count_masked = CSP.garbled_circuitcd(M, vector_decrypted)
         count_encrypted = self.public_key.lab_encrypt(count_masked)._lab_subtract_encrypted(r_enc)
         return count_encrypted
+
     def laplace(self, data, privacy_parameter, CSP):
         data = data if type(data) == list else [data]
         noisy_data = [value._lab_add_encrypted(self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*self.sensitivity)/privacy_parameter))) for value in data]
         return CSP.laplace(noisy_data, self.sensitivity, privacy_parameter)
     
-    def noisy_max(self, data, privacy_parameter, CSP, how_many):
+    def noisy_max(self, data, privacy_parameter, CSP, k):
          M = [random.randint(0,10**10) for _ in range(len(data))]
          M_enc = [self.public_key.lab_encrypt(m) for m in M]
-         noise = [self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*how_many*self.sensitivity)/privacy_parameter)) for _ in range(len(data))]
+         noise = [self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2 * k * self.sensitivity) / privacy_parameter)) for _ in range(len(data))]
          noisy_data = [data[i]._lab_add_encrypted(noise[i])._lab_add_encrypted(M_enc[i]) for i in range(len(data))]
-         data_decrypted = CSP.noisy_max(noisy_data, self.sensitivity, privacy_parameter, how_many, CSP)
-         return CSP.garbled_circuitnm(M, data_decrypted, how_many)
+         data_decrypted = CSP.noisy_max(noisy_data, self.sensitivity, privacy_parameter, k)
+         return CSP.garbled_circuitnm(M, data_decrypted, k)

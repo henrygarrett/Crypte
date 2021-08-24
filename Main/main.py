@@ -223,6 +223,7 @@ def test_cross_product(verbose=True):
         print("True Value:", true_value)
         print("Query Result:", result)
         print("\n")
+
     assert true_value == result
     return True
 
@@ -243,7 +244,6 @@ def test_group_by_count(verbose=True):
 # Tests the GBCE Operator works correctly
 def test_group_by_count_encoded(verbose=True):
     
-# Tests the Laplace Operator works correctly
     result = AS.program_executor.group_by_count_encoded(AS.aggregator.data_encrypted, 1, CSP)
     result = [[CSP.key_manager.private_key.lab_decrypt(value) for value in row]for row in result]
     true_value = [[1,0,0,0,0,0],[0,1,0,0,0,0],[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,0,1,0,0]]
@@ -252,10 +252,12 @@ def test_group_by_count_encoded(verbose=True):
         print("TEST: GBCE")
         print("Query Result:", result)
         print("True Value:", true_value)
+        print("\n")
 
     assert result == true_value
     return True
 
+# Tests Count Distinct Operator works correctly
 def test_count_distinct(verbose=True):
     input_data = [AS.program_executor.public_key.lab_encrypt(10),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(1),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(11),AS.program_executor.public_key.lab_encrypt(23)]
     result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count_distinct(input_data, CSP))
@@ -264,24 +266,43 @@ def test_count_distinct(verbose=True):
         print("TEST: Count Distinct")
         print("Query Result:", result)
         print("True Value:", 4)
+        print("\n")
 
     assert result == 4
     return True
 
+# Tests the Laplace Operator works correctly
 def test_laplace(verbose=True):
     data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     if verbose:
         print("TEST: Laplace")
         print("Query Result:", AS.program_executor.laplace(data, 5, CSP))# 5 seems to give reasonable noise on output for our values +/- 2ish
         print("True Value: [3,2]")
-def test_noisy_max(verbose=True):
-     input_data = [AS.program_executor.public_key.lab_encrypt(100),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(3),AS.program_executor.public_key.lab_encrypt(5),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(2)]
-     
-     if verbose:
-        print("TEST: Count Distinct")
-        print("Query Result:", AS.program_executor.noisy_max(input_data, 5, CSP, 3))
-        print("True Value:", CSP.decrypt_bit_vector(input_data))
+        print("\n")
 
+    CSP.privacy_engine.reset_ledger(10)
+    AS.program_executor.reset_sensitivity()
+    return True
+
+# Tests the Noisy Max Operator work correctly
+def test_noisy_max(verbose=True):
+    AS.program_executor.sensitivity = 2 # Set sensitivty to 2, to mimic group-by count query
+    input_data = [AS.program_executor.public_key.lab_encrypt(100),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(3),AS.program_executor.public_key.lab_encrypt(5),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(2)]
+
+    query_result = AS.program_executor.noisy_max(input_data, 5, CSP, 3)
+    true_value = CSP.decrypt_bit_vector(input_data)
+
+    if verbose:
+        print("TEST: Count Distinct")
+        print("Query Result:", query_result)
+        print("True Value:", true_value)
+        print("\n")
+
+    CSP.privacy_engine.reset_ledger(10)
+    AS.program_executor.reset_sensitivity()
+
+    assert 0 in query_result # Noisy max should at least retrieve the first item that has frequency 100
+    return True
 
 # # --- Basic encryption/encoding tests ---
 
@@ -302,7 +323,6 @@ def test_noisy_max(verbose=True):
 # test_cross_product()
 # test_group_by_count()
 # test_group_by_count_encoded()
-test_laplace()
-#test_count_distinct()
-test_noisy_max()
-test_noisy_max()
+# test_laplace()
+# test_count_distinct()
+# test_noisy_max()
