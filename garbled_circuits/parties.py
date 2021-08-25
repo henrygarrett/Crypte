@@ -70,7 +70,6 @@ class Alice(YaoGarbler):
         h1 = self.G.mul(self.c, self.G.inv(h0))
         k = self.G.rand_int()
         c1 = self.G.gen_pow(k)
-
         msgs = pickle.dumps(self.b_keys[w][0]), pickle.dumps(self.b_keys[w][1])
 
         e0 = util.xor_bytes(msgs[0], self.ot_hash(self.G.pow(h0, k), len(msgs[0])))
@@ -235,18 +234,17 @@ def test_32bit_subtractor(verbose=True):
     return True
 def test_counter(verbose=True):
     circuits = "../circuits/counter.json"
-    a = ['{:032b}'.format(3000000000),'{:032b}'.format(75),'{:032b}'.format(0),'{:032b}'.format(0),'{:032b}'.format(12)]
+    a = ['{:032b}'.format(140),'{:032b}'.format(75),'{:032b}'.format(530),'{:032b}'.format(0),'{:032b}'.format(0)]
     a_input = [int(x) for i in a for x in i]
     a_input.append(0)
-    print(a_input)
     b_input = [0]
     res = main(circuits, a_input, b_input)
     if verbose:
         print("TEST: Counter")
-        print('True Result: \n', [1,1,0,0,1])
-        print("Circuit Output: \n", list(res.values())[::-1]) # Final outputs
+        print('True Result: \n', [1,1,1,0,0])
+        print("Circuit Output: \n", list(res.values())) # Final outputs
         print("\n")
-    assert list(res.values())[::-1] == [int(i) for i in '{:032b}'.format(137836-78437)]
+    assert list(res.values()) == [1,1,1,0,0]
     return True
-test_32bit_subtractor()
+#test_32bit_subtractor()
 test_counter()

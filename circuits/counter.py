@@ -12,7 +12,7 @@ import json
 dictionary = {"name": "Test","circuits": [{"id": "Counter","alice": None,"bob": [999999999999],"out": None,"gates": []}]}
 circuit = dictionary['circuits'][0]
 
-circuit['alice'] = [i for i in range(size*number_of_elements + 1)]
+circuit['alice'] = [i for i in range(size*number_of_elements)]
 circuit['alice'].append(5000)# additional input gate so alice can add a zero input
 
 
@@ -23,8 +23,10 @@ for i in range(number_of_elements):
             circuit['gates'].append({"id": start + 1, "type": "OR", "in": [i*size,i*size + 1]})
         else:
             circuit['gates'].append({"id": start + j, "type": "OR", "in": [start + j - 1, i*size + j]})
-    
-
+            
+            
+circuit['gates'].append({"id": 1400, "type": "OR", "in": [5000, 5000]})    
+circuit['gates'].append({"id": 73856002678, "type": "OR", "in": [999999999999, 999999999999]}) 
 starter = number_of_elements*(size-1) + size*number_of_elements
 
 inputs = [size*number_of_elements + i*(size-1) - 1 for i in range(1, number_of_elements + 1)]
