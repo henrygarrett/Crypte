@@ -2,9 +2,8 @@
 import hashlib
 import logging
 import pickle
-
 from garbled_circuits import yao, util
-from abc import ABC, abstractmethod
+from abc import ABC
 
 logging.basicConfig(format="[%(levelname)s] %(message)s",
                     level=logging.WARNING)
@@ -197,13 +196,7 @@ class Bob:
         return result
 
 # Simple 2-input/output AND test
-def main():
-    circuits = "../circuits/32bit_subtractor.json"
-    a = '{:032b}'.format(137836)
-    b = '{:032b}'.format(78437)
-    a_input = [int(i) for i in a]
-    b_input = [int(i) for i in b]
-
+def main(circuits, a_input, b_input):
     alice = Alice(a_input, circuits)
     bob = Bob(b_input)
 
@@ -224,7 +217,35 @@ def main():
         b_inputs_encr[w] = pickle.loads(bob.ot_receive(b, c1, e0, e1))
 
     res = bob.evaluate(a_inputs, b_inputs_encr) # Bob evaluates circuit on encrypted inputs
-    print("Circuit Output: ", list(res.values())) # Final outputs
-    print('True Result: ', [int(i) for i in '{:032b}'.format(137836-78437)])
-    print(list(res.values()) == [int(i) for i in '{:032b}'.format(137836-78437)][::-1])
-main()
+    return res
+
+def test_32bit_subtractor(verbose=True):
+    circuits = "../circuits/32bit_subtractor.json"
+    a = '{:032b}'.format(137836)
+    b = '{:032b}'.format(78437)
+    a_input = [int(i) for i in a]
+    b_input = [int(i) for i in b]
+    res = main(circuits, a_input, b_input)
+    if verbose:
+        print("TEST: 32bit subtractor")
+        print('True Result: \n', [int(i) for i in '{:032b}'.format(137836-78437)])
+        print("Circuit Output: \n", list(res.values())[::-1]) # Final outputs
+        print("\n")
+    assert list(res.values())[::-1] == [int(i) for i in '{:032b}'.format(137836-78437)]
+    return True
+def test_counter(verbose=True):
+    circuits = "../circuits/counter.json"
+    a = ['{:032b}'.format(45),'{:032b}'.format(75),'{:032b}'.format(0),'{:032b}'.format(0),'{:032b}'.format(12)]
+    a_input = [0]
+    a_input.extend(int(x) for i in a for x in i)
+    b_input = [0]
+    res = main(circuits, a_input, b_input)
+    if verbose:
+        print("TEST: Counter")
+        print('True Result: \n', [1,1,0,0,1])
+        print("Circuit Output: \n", list(res.values())[::-1]) # Final outputs
+        print("\n")
+    assert list(res.values())[::-1] == [int(i) for i in '{:032b}'.format(137836-78437)]
+    return True
+test_32bit_subtractor()
+test_counter()
