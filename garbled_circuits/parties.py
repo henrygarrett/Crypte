@@ -235,9 +235,10 @@ def test_32bit_subtractor(verbose=True):
     return True
 def test_counter(verbose=True):
     circuits = "../circuits/counter.json"
-    a = ['{:032b}'.format(45),'{:032b}'.format(75),'{:032b}'.format(0),'{:032b}'.format(0),'{:032b}'.format(12)]
-    a_input = [0]
-    a_input.extend(int(x) for i in a for x in i)
+    a = ['{:032b}'.format(3000000000),'{:032b}'.format(75),'{:032b}'.format(0),'{:032b}'.format(0),'{:032b}'.format(12)]
+    a_input = [int(x) for i in a for x in i]
+    a_input.append(0)
+    print(a_input)
     b_input = [0]
     res = main(circuits, a_input, b_input)
     if verbose:
