@@ -234,17 +234,36 @@ def test_32bit_subtractor(verbose=True):
     return True
 def test_counter(verbose=True):
     circuits = "../circuits/counter.json"
-    a = ['{:032b}'.format(140),'{:032b}'.format(75),'{:032b}'.format(530),'{:032b}'.format(0),'{:032b}'.format(0)]
+    a = [4532,0,7683,93474,434,0,0,0]
+    a = ['{:032b}'.format(i) for i in a]
     a_input = [int(x) for i in a for x in i]
     a_input.append(0)
     b_input = [0]
     res = main(circuits, a_input, b_input)
     if verbose:
         print("TEST: Counter")
-        print('True Result: \n', [1,1,1,0,0])
+        print('True Result: \n', [0,1,1,0])
         print("Circuit Output: \n", list(res.values())) # Final outputs
         print("\n")
-    assert list(res.values()) == [1,1,1,0,0]
+    assert list(res.values()) == [0,1,1,0]
+    return True
+def test_32bit_adder(verbose=True):
+    circuits = "../circuits/32bit_subtractor.json"
+    x = 4905746
+    y = 6678767
+    sumt = x+y
+    a = '{:032b}'.format(x)
+    b = '{:032b}'.format(y)
+    a_input = [int(i) for i in a]
+    b_input = [int(i) for i in b]
+    res = main(circuits, a_input, b_input)
+    if verbose:
+        print("TEST: 32bit subtractor")
+        print('True Result: \n', [int(i) for i in '{:032b}'.format(sumt)])
+        print("Circuit Output: \n", list(res.values())[::-1]) # Final outputs
+        print("\n")
+    assert list(res.values())[::-1] == [int(i) for i in '{:032b}'.format(sumt)]
     return True
 #test_32bit_subtractor()
-test_counter()
+test_32bit_adder()
+#test_counter()
