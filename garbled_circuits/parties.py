@@ -4,7 +4,11 @@ import logging
 import pickle
 from garbled_circuits import yao, util
 from abc import ABC
-
+from adder_w_fcts import Build_adder_circuit
+import random
+from circuits.counter import Circuit
+import copy
+import math
 logging.basicConfig(format="[%(levelname)s] %(message)s",
                     level=logging.WARNING)
 
@@ -107,11 +111,12 @@ class Alice(YaoGarbler):
 
         self.b_keys = b_keys # Store b_keys for later OT computations
 
-        print(f"======== Circuit ID: {circuit['id']} ========")
+        #print(f"======== Circuit ID: {circuit['id']} ========")
 
         bits_a = self.input  # Alice's inputs
 
         # Map Alice's wires to (key, encr_bit)
+        
         for i in range(len(a_wires)):
             a_inputs[a_wires[i]] = (keys[a_wires[i]][bits_a[i]],
                                     pbits[a_wires[i]] ^ bits_a[i])
@@ -232,38 +237,52 @@ def test_32bit_subtractor(verbose=True):
         print("\n")
     assert list(res.values())[::-1] == [int(i) for i in '{:032b}'.format(137836-78437)]
     return True
-def test_counter(verbose=True):
-    circuits = "../circuits/counter.json"
-    a = [4532,0,7683,93474,434,0,0,0]
-    a = ['{:032b}'.format(i) for i in a]
+
+
+def test_counter(number_of_elements, order, verbose=True):
+    sum_size = math.ceil(math.log(number_of_elements + 0.1,2))
+    print(sum_size)
+    base_out = '{:0' + str(sum_size) + 'b}'
+    circuit = Circuit(number_of_elements,order)
+    circuit.counter()
+    circuit.adder()
+    circuits = "counter.json"
+    base_in = '{:0' + str(order) + 'b}'
+    a = [random.randint(0,1) for _ in range(number_of_elements)]
+    true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(a))) for x in i]
+    a.insert(0,0)
+    a = [base_in.format(i) for i in a]
     a_input = [int(x) for i in a for x in i]
-    a_input.append(0)
     b_input = [0]
     res = main(circuits, a_input, b_input)
     if verbose:
         print("TEST: Counter")
-        print('True Result: \n', [0,1,1,0])
+        print('True Result: \n', true_result)
         print("Circuit Output: \n", list(res.values())) # Final outputs
         print("\n")
-    assert list(res.values()) == [0,1,1,0]
+    assert list(res.values()) == true_result
     return True
-def test_32bit_adder(verbose=True):
-    circuits = "../circuits/32bit_subtractor.json"
-    x = 4905746
-    y = 6678767
-    sumt = x+y
-    a = '{:032b}'.format(x)
-    b = '{:032b}'.format(y)
-    a_input = [int(i) for i in a]
-    b_input = [int(i) for i in b]
+
+
+def test_adder(how_many, verbose=True, tests=5):
+    input = [random.randint(0,1) for i in range(how_many)]
+    sum_size = math.ceil(math.log(how_many,2))
+    base = '{:0' + str(sum_size) + 'b}'
+    true_result = [int(x) for i in base.format(sum(copy.deepcopy(input))) for x in i]
+    input.insert(0,0)
+    adder = Build_adder_circuit(how_many)
+    adder.adder()
+    circuits = "counter.json"
+    a_input = input
+    b_input = [0]
     res = main(circuits, a_input, b_input)
     if verbose:
-        print("TEST: 32bit subtractor")
-        print('True Result: \n', [int(i) for i in '{:032b}'.format(sumt)])
-        print("Circuit Output: \n", list(res.values())[::-1]) # Final outputs
+        print('TEST: adder')
+        print('True Result:    ', true_result)
+        print("Circuit Output: ", list(res.values())[::-1]) # Final outputs
         print("\n")
-    assert list(res.values())[::-1] == [int(i) for i in '{:032b}'.format(sumt)]
-    return True
-#test_32bit_subtractor()
-test_32bit_adder()
-#test_counter()
+    assert list(res.values())[::-1] == true_result
+    print('All tests ran successfully')
+
+
+test_counter(10,8)
