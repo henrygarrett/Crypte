@@ -136,7 +136,7 @@ class GarbledGate:
             # Encrypt message and add it to the garbled table
             self.garbled_table[(encr_bit_in, )] = encrypt(key_in, msg)
             # Add to the clear table indexes of each keys
-            self.clear_garbled_table[(encr_bit_in, )] = [(inp, bit_in),
+            self.clear_garbled_table[(encr_bit_in)] = [(inp, bit_in),
                                                          (out, bit_out),
                                                          encr_bit_out]
 
@@ -168,22 +168,36 @@ class GarbledGate:
 
     def print_garbled_table(self):
         """Print a clear representation of the garbled table."""
+        # print(f"GATE: {self.output}, TYPE: {self.gate_type}")
+        # for k, v in self.clear_garbled_table.items():
+        #     # If it's a 2-input gate
+        #     if len(k) > 1:
+        #         key_a, key_b, key_out = v[0], v[1], v[2]
+        #         encr_bit_out = v[3]
+        #         print(f"[{k[0]}, {k[1]}]: "
+        #               f"[{key_a[0]}, {key_a[1]}][{key_b[0]}, {key_b[1]}]"
+        #               f"([{key_out[0]}, {key_out[1]}], {encr_bit_out})")
+        #     # Else it's a NOT gate
+        #     else:
+        #         key_in, key_out = v[0], v[1]
+        #         encr_bit_out = v[2]
+        #         print(f"[{k[0]}]: "
+        #               f"[{key_in[0]}, {key_in[1]}]"
+        #               f"([{key_out[0]}, {key_out[1]}], {encr_bit_out})")
         print(f"GATE: {self.output}, TYPE: {self.gate_type}")
         for k, v in self.clear_garbled_table.items():
             # If it's a 2-input gate
+            print(k)
             if len(k) > 1:
-                key_a, key_b, key_out = v[0], v[1], v[2]
-                encr_bit_out = v[3]
+                key_out = v[2]
+
                 print(f"[{k[0]}, {k[1]}]: "
-                      f"[{key_a[0]}, {key_a[1]}][{key_b[0]}, {key_b[1]}]"
-                      f"([{key_out[0]}, {key_out[1]}], {encr_bit_out})")
+                      f"[{key_out[1]}]")
             # Else it's a NOT gate
             else:
-                key_in, key_out = v[0], v[1]
-                encr_bit_out = v[2]
+                key_out = v[1]
                 print(f"[{k[0]}]: "
-                      f"[{key_in[0]}, {key_in[1]}]"
-                      f"([{key_out[0]}, {key_out[1]}], {encr_bit_out})")
+                      f"[{key_out[1]}]")
 
     def get_garbled_table(self):
         """Return the garbled table of the gate."""

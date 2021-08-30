@@ -5,12 +5,14 @@ import pickle
 import random
 import copy
 import math
-import numpy
-from garbled_circuits import yao, util
 from abc import ABC
-from circuits.adder import Adder_circuit
-from circuits.counter import Counter_circuit
-from circuits.circuit import Circuit
+from garbled_circuits import yao, util
+
+from circuits.adder1 import Adder1_circuit
+from circuits.adder2 import Adder2_circuit
+from circuits.sieve import Sieve_circuit
+from circuits.subtractor import Subtractor_circuit
+from circuits.complete_circuit import Complete_circuit
 
 logging.basicConfig(format="[%(levelname)s] %(message)s",
                     level=logging.WARNING)
@@ -102,6 +104,7 @@ class Alice(YaoGarbler):
         """
         entry = self.circuits[0]
         circuit, pbits, keys = entry["circuit"], entry["pbits"], entry["keys"]
+        print(circuit)
         outputs = circuit["out"]
         a_wires = circuit.get("alice", [])  # Alice's wires
         a_inputs = {}  # map from Alice's wires to (key, encr_bit) inputs
@@ -118,7 +121,9 @@ class Alice(YaoGarbler):
         bits_a = self.input  # Alice's inputs
 
         # Map Alice's wires to (key, encr_bit)
-        
+        print(keys.keys())
+        print(a_wires)
+        print(bits_a)
         for i in range(len(a_wires)):
             a_inputs[a_wires[i]] = (keys[a_wires[i]][bits_a[i]],
                                     pbits[a_wires[i]] ^ bits_a[i])
@@ -237,48 +242,61 @@ def test_subtractor(how_many, size_in, verbose=True):
     add.extend(a_input)
     a_input = add
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    print('', a_input)
-    print('               ', b_input)
+    print('a:', a_input)
+    print('b:', b_input)
     
-    subtractor = Circuit(how_many, size_in)
-    subtractor.subtractor(lonely=True)
-    circuit = "counter.json"
+    subtractor = Subtractor_circuit(how_many, size_in)
+    subtractor.subtractor()
+    circuit = "subtractor.json"
     
     res = main(circuit, a_input, b_input)
     view('subtractor', values, true_result, list(res.values())[::-1], verbose)
 
-def test_filter(how_many, size_in, verbose=True):
+def test_sieve(how_many, size_in, verbose=True):
     base_in = '{:0' + str(size_in) + 'b}'
     
-    input = [random.randint(0,1)*random.randint(0,9) for i in range(how_many)]
-    values = input
-    true_result = [0 if x == 0 else 1 for x in input]
-    input = [int(x) for a in input for x in base_in.format(a)]
-    input.insert(0,0)
+    a_input = [random.randint(0,1)*random.randint(0,9) for i in range(how_many)]
+    values = a_input
+    true_result = [0 if x == 0 else 1 for x in a_input]
+    a_input = [int(x) for a in a_input for x in base_in.format(a)]
+    add = [0 for _ in range(size_in + 1)]
+    add.extend(a_input)
+    a_input = add
     
-    filter = Counter_circuit(how_many, size_in)
-    filter.counter()
-    circuit = "counter.json"
+    sieve = Sieve_circuit(how_many, size_in)
+    sieve.sieve()
+    circuit = "sieve.json"
     
-    res = main(circuit, input, [0])
-    view('filter', values, true_result, list(res.values()), verbose)
+    b_input = [random.randint(0,2**(size_in-2)) for i in range(how_many)]
+    b_input = [int(x) for b in b_input for x in base_in.format(b)]
+    
+    print(a_input)
+    res = main(circuit, a_input, b_input)
+    view('sieve', values, true_result, list(res.values()), verbose)
 
-def test_adder(how_many, verbose=True):
-    base_out = '{:0' + str(math.ceil(math.log(how_many,2))) + 'b}'
+def test_adder1(how_many, input_size, verbose=True):
+    base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
+    base_in = '{:0' + str(input_size) + 'b}'
     
-    input = [random.randint(0,1) for i in range(how_many)]
+    a_input = [random.randint(0,1) for i in range(how_many)]
     values = input
-    true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(input))) for x in i]
-    input.insert(0,0)
+    true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(a_input))) for x in i]
+    add = [0 for _ in range(input_size + 1)]
+    add.extend(a_input)
+    a_input = add
     
-    adder = Adder_circuit(how_many)
-    adder.adder()
-    circuit = "counter.json"
     
-    res = main(circuit, input, [0])
+    b_input = [random.randint(0,2**(input_size-2)) for i in range(how_many)]
+    b_input = [int(x) for b in b_input for x in base_in.format(b)]
+    
+    adder = Adder1_circuit(how_many, input_size)
+    adder.adder1()
+    circuit = "adder1.json"
+    
+    res = main(circuit, a_input, [0])
     view('adder', values, true_result, list(res.values())[::-1], verbose)
 
-def test_counter_older(how_many, size_in, verbose=True):
+def test_complete1(how_many, size_in, verbose=True):
     base_in = '{:0' + str(size_in) + 'b}'
     base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
     
@@ -289,15 +307,15 @@ def test_counter_older(how_many, size_in, verbose=True):
         input = [int(x) for a in input for x in base_in.format(a)]
         input.insert(0,0)
         
-        counter = Counter_circuit(how_many, size_in)
+        counter = Adder_circuit(how_many, size_in)
         counter.counter()
         counter.adder()
-        circuit = "counter.json"
+        circuit = "adder2.json"
         
         res = main(circuit, input, [0])
         view('counter',values, true_result, list(res.values())[::-1], verbose)
 
-def test_counter_old(how_many, size_in, verbose=True):
+def test_complete2(how_many, size_in, verbose=True):
     base_in = '{:0' + str(size_in) + 'b}'
     base_out = '{:0' + str(math.ceil(math.log(how_many,2))) + 'b}'
     
@@ -314,16 +332,16 @@ def test_counter_old(how_many, size_in, verbose=True):
     add.extend(a_input)
     a_input = add
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    counter = Circuit(how_many, size_in)
+    counter = Complete_circuit(how_many, size_in)
     counter.subtractor(lonely=True)
     counter.filter()
     counter.adder1()
-    circuit = "counter.json"
+    circuit = "adder2.json"
     
     res = main(circuit, a_input, b_input)
     view('filter', values, true_result, list(res.values())[::-1], verbose)
 
-def test_counter(how_many, size_in, verbose=True):
+def test_complete3(how_many, size_in, verbose=True):
     base_in = '{:0' + str(size_in) + 'b}'
     base_out = '{:0' + str(math.ceil(math.log(how_many+0.1,2))) + 'b}'
     print(base_out)
@@ -344,15 +362,16 @@ def test_counter(how_many, size_in, verbose=True):
     a_input.insert(0,0)
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
     
-    counter = Circuit(how_many, size_in)
+    counter = Complete_circuit(how_many, size_in)
     counter.subtractor()
-    counter.filter()
+    counter.sieve()
     counter.adder1()
     counter.adder2()
-    circuit = "counter.json"
+    circuit = "adder2.json"
     
     res = main(circuit, a_input, b_input)
     view('filter', values, true_result, list(res.values())[::-1], verbose)
+
 def view(test, values, true_result, output, verbose):
     if verbose:
         print('TEST: ', test)
@@ -363,9 +382,6 @@ def view(test, values, true_result, output, verbose):
     print('Tests ran successfully')
     print('\n')
 
+test_adder1(3,4)
 
-#test_counter_old(5,16)
-test_subtractor(3, 4)
-test_filter(4, 5)
-test_adder(3,4)
 

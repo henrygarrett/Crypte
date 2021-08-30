@@ -4,28 +4,18 @@ Created on Thu Aug 26 13:02:52 2021
 
 @author: Garret_H
 """
-import math
 import json
+from circuits.circuit import Circuit
 
-class Adder_circuit():
-    def __init__(self, number_of_elements):
-        self.number_of_elements = number_of_elements #ASSUMED GREATER THAN 1
-        self.sum_size = math.ceil(math.log(self.number_of_elements,2))# NUMBER OF BITS IN THE OUTPUT
-        self.carry = 0
-        
-        self.dictionary = {"name": "Test","circuits": [{"id": "counter","alice": None,"bob": [-1],"out": None,"gates": []}]}
-        self.circuit = self.dictionary['circuits'][0]
-        
-        self.circuit['alice'] = [i for i in range(self.number_of_elements + 1)] # additional input gate so alice can add a zero input
-        self.circuit['gates'].append({"id": -2, "type": "OR", "in": [-1,0]}) #GATE FOR BOB TO APPEASE THE circuit GODS
-        
-        self.inputs = self.circuit['alice'][1:]
+class Adder1_circuit(Circuit):
+    def __init__(self, number_of_elements, input_size):
+        super().__init__(number_of_elements, input_size)
 
-    def adder(self):
+
+    def adder1(self):
         sum = []
         for i in range(self.number_of_elements - 1):
-            for j in range(self.sum_size):
-                
+            for j in range(self.adder1_output_size):
                 if j == 0:
                     if i == 0:
                         sum.append(self.half_adder(self.inputs[i], self.inputs[i+1]))
@@ -37,7 +27,7 @@ class Adder_circuit():
                     else:
                         sum.append(self.full_adder(sum.pop(0), 0))                     
         self.circuit['out'] = sum
-        with open('counter.json','w') as file:
+        with open('adder1.json','w') as file:
             json.dump(self.dictionary, file)    
     def half_adder(self, alice, bob):
         start = max(self.circuit['alice']) if len(self.circuit['gates']) == 1 else self.circuit['gates'][-1]['id']
