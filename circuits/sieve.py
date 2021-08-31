@@ -4,6 +4,7 @@ Created on Tue Aug 24 17:29:15 2021
 
 @author: Garret_H
 """
+#DONT TOUCH, IT WORKS
 import json
 from circuits.circuit import Circuit
 
@@ -17,13 +18,12 @@ class Sieve_circuit(Circuit):
             for j in range(1, self.input_size):
                 if j == 1:
                     start = max(self.circuit['alice']) if i == 0 else self.circuit['gates'][-1]['id']
-                    self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [i*self.input_size + 1,i*self.input_size + 2]})
+                    self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [i*self.input_size + self.input_size + 1,i*self.input_size + self.input_size + 2]})
                 else:
                     start = self.circuit['gates'][-1]['id']
-                    self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [start, i*self.input_size + j + 1]})        
+                    self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [start, i*self.input_size + self.input_size + j + 1]})
+            self.adder1_inputs.append(self.circuit['gates'][-1]['id'])
                     
-        #GATES CORRESPONDING TO EACH NUMBERS INDICATOR BIT
-        self.inputs = [self.input_size*self.number_of_elements + i*(self.input_size-1) for i in range(1, self.number_of_elements + 1)]
-        self.circuit['out'] = self.inputs
+        self.circuit['out'] = self.adder1_inputs
         with open('sieve.json','w') as file:
             json.dump(self.dictionary, file)

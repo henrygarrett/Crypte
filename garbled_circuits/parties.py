@@ -238,8 +238,6 @@ def test_subtractor(how_many, size_in, verbose=True):
     add.extend(a_input)
     a_input = add
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    print('a:', a_input)
-    print('b:', b_input)
     
     subtractor = Subtractor_circuit(how_many, size_in)
     subtractor.subtractor()
@@ -248,6 +246,7 @@ def test_subtractor(how_many, size_in, verbose=True):
     res = main(circuit, a_input, b_input)
     view('subtractor', values, true_result, list(res.values())[::-1], verbose)
 
+#DONT TOUCH, IT WORKS
 def test_sieve(how_many, size_in, verbose=True):
     base_in = '{:0' + str(size_in) + 'b}'
     
@@ -266,7 +265,6 @@ def test_sieve(how_many, size_in, verbose=True):
     b_input = [random.randint(0,2**(size_in-2)) for i in range(how_many)]
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
     
-    print(a_input)
     res = main(circuit, a_input, b_input)
     view('sieve', values, true_result, list(res.values()), verbose)
 
@@ -406,6 +404,7 @@ def view(test, values, true_result, output, verbose):
     print('Tests ran successfully')
     print('\n')
 
-test_adder1(3,4)
+test_subtractor(5,32)
+test_sieve(5,32)
 
 

@@ -15,8 +15,6 @@ class Subtractor_circuit(Circuit):
     def subtractor(self):
         difference= []
         for i in range(self.number_of_elements * self.input_size):
-            print(self.circuit['alice'][-i-1])
-            print(self.circuit['bob'][-i-1])
             if i == 0:
                 difference.append(self.half_subtractor(self.circuit['alice'][-i-1],self.circuit['bob'][-i-1]))
             else:
