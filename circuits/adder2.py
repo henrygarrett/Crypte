@@ -12,6 +12,8 @@ class Adder2_circuit(Circuit):
         super.__init__(number_of_elements)
 
     def adder2(self):
+        if self.adder2_inputs == []:
+            self.adder2_inputs = self.circuit['bob'][:self.adder1_output_size-1]
         total= []
         print(self.adder2_inputs)
         for i, n in enumerate(self.adder2_inputs):

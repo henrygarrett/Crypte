@@ -104,7 +104,6 @@ class Alice(YaoGarbler):
         """
         entry = self.circuits[0]
         circuit, pbits, keys = entry["circuit"], entry["pbits"], entry["keys"]
-        print(circuit)
         outputs = circuit["out"]
         a_wires = circuit.get("alice", [])  # Alice's wires
         a_inputs = {}  # map from Alice's wires to (key, encr_bit) inputs
@@ -121,9 +120,6 @@ class Alice(YaoGarbler):
         bits_a = self.input  # Alice's inputs
 
         # Map Alice's wires to (key, encr_bit)
-        print(keys.keys())
-        print(a_wires)
-        print(bits_a)
         for i in range(len(a_wires)):
             a_inputs[a_wires[i]] = (keys[a_wires[i]][bits_a[i]],
                                     pbits[a_wires[i]] ^ bits_a[i])
@@ -229,7 +225,7 @@ def main(circuits, a_input, b_input):
     res = bob.evaluate(a_inputs, b_inputs_encr) # Bob evaluates circuit on encrypted inputs
     return res
 
-
+#DONT TOUCH, IT WORKS
 def test_subtractor(how_many, size_in, verbose=True):
     base_in = '{:0' + str(size_in) + 'b}'
     
@@ -278,10 +274,13 @@ def test_adder1(how_many, input_size, verbose=True):
     base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
     base_in = '{:0' + str(input_size) + 'b}'
     
-    a_input = [random.randint(0,1) for i in range(how_many)]
+    a_input = [random.randint(0,1)*random.randint(0,9) for i in range(how_many)]
     values = input
     true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(a_input))) for x in i]
+    a_input = [int(x) for a in a_input for x in base_in.format(a)]
+    print(len(a_input))
     add = [0 for _ in range(input_size + 1)]
+    print(len(add))
     add.extend(a_input)
     a_input = add
     
@@ -293,7 +292,32 @@ def test_adder1(how_many, input_size, verbose=True):
     adder.adder1()
     circuit = "adder1.json"
     
-    res = main(circuit, a_input, [0])
+    res = main(circuit, a_input, b_input)
+    view('adder', values, true_result, list(res.values())[::-1], verbose)
+
+def test_adder2(how_many, input_size, verbose=True):
+    base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
+    base_in = '{:0' + str(input_size) + 'b}'
+    
+    a_input = [random.randint(0,1)*random.randint(0,9) for i in range(how_many)]
+    values = input
+    true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(a_input))) for x in i]
+    a_input = [int(x) for a in a_input for x in base_in.format(a)]
+    print(len(a_input))
+    add = [random.randint(0,1) for _ in range(input_size + 1)]
+    print(len(add))
+    add.extend(a_input)
+    a_input = add
+    
+    
+    b_input = [random.randint(0,2**(input_size-2)) for i in range(how_many)]
+    b_input = [int(x) for b in b_input for x in base_in.format(b)]
+    
+    adder = Adder2_circuit(how_many, input_size)
+    adder.adder2()
+    circuit = "adder1.json"
+    
+    res = main(circuit, a_input, b_input)
     view('adder', values, true_result, list(res.values())[::-1], verbose)
 
 def test_complete1(how_many, size_in, verbose=True):
@@ -307,7 +331,7 @@ def test_complete1(how_many, size_in, verbose=True):
         input = [int(x) for a in input for x in base_in.format(a)]
         input.insert(0,0)
         
-        counter = Adder_circuit(how_many, size_in)
+        counter = Adder1_circuit(how_many, size_in)
         counter.counter()
         counter.adder()
         circuit = "adder2.json"

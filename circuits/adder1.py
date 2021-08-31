@@ -13,14 +13,16 @@ class Adder1_circuit(Circuit):
 
 
     def adder1(self):
+        if self.adder1_inputs == []:
+            self.adder1_inputs = [self.circuit['bob'][i] for i in range(0,self.input_size*self.number_of_elements,self.input_size)]
         sum = []
         for i in range(self.number_of_elements - 1):
             for j in range(self.adder1_output_size):
                 if j == 0:
                     if i == 0:
-                        sum.append(self.half_adder(self.inputs[i], self.inputs[i+1]))
+                        sum.append(self.half_adder(self.adder1_inputs[i], self.adder1_inputs[i+1]))
                     else:
-                        sum.append(self.half_adder(sum.pop(0), self.inputs[i+1]))
+                        sum.append(self.half_adder(sum.pop(0), self.adder1_inputs[i+1]))
                 else:
                     if i == 0:
                         sum.append(self.full_adder(0, 0))

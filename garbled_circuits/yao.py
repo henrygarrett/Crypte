@@ -60,7 +60,7 @@ def evaluate(circuit, g_tables, pbits_out, a_inputs, b_inputs):
             # Fetch input key associated with the gate's input wire
             key_in, encr_bit_in = wire_inputs[gate_in[0]]
             # Fetch the encrypted message in the gate's garbled table
-            encr_msg = g_tables[gate_id][(encr_bit_in, )]
+            encr_msg = g_tables[gate_id][(encr_bit_in)]
             # Decrypt message
             msg = decrypt(key_in, encr_msg)
         # Else the gate has two input wires (same model)
