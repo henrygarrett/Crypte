@@ -14,6 +14,8 @@ class Sieve_circuit(Circuit):
         
     def sieve(self):
         #RETURNS 0 IF NUMBER IS 0, 1 O/W
+        if self.sieve_inputs == []:
+            self.sieve_inputs = [i*self.input_size + self.input_size + j for i in range(self.number_of_elements) for j in range(1, self.input_size + 1)]
         for i in range(self.number_of_elements):
             for j in range(1, self.input_size):
                 if j == 1:
@@ -23,7 +25,6 @@ class Sieve_circuit(Circuit):
                     start = self.circuit['gates'][-1]['id']
                     self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [start, i*self.input_size + self.input_size + j + 1]})
             self.adder1_inputs.append(self.circuit['gates'][-1]['id'])
-                    
         self.circuit['out'] = self.adder1_inputs
         with open('sieve.json','w') as file:
             json.dump(self.dictionary, file)

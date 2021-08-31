@@ -8,8 +8,8 @@ import math
 from abc import ABC
 from garbled_circuits import yao, util
 
-from circuits.adder1 import Adder1_circuit
-from circuits.adder2 import Adder2_circuit
+from circuits.adder1_circuit import Adder1
+from circuits.adder2_circuit import Adder2
 from circuits.sieve import Sieve_circuit
 from circuits.subtractor import Subtractor_circuit
 from circuits.complete_circuit import Complete_circuit
@@ -225,45 +225,30 @@ def main(circuits, a_input, b_input):
     res = bob.evaluate(a_inputs, b_inputs_encr) # Bob evaluates circuit on encrypted inputs
     return res
 
-#DONT TOUCH, IT WORKS
-def test_subtractor(how_many, size_in, verbose=True):
-    base_in = '{:0' + str(size_in) + 'b}'
+def test_subtractor(how_many, input_size, verbose=True):
+    start = setup(how_many, input_size)
+    a_input = start['a_input']
+    b_input = start['b_input']
+    true_result = start['true_result'][0]
+    values = start['values'][0]
     
-    a_input = [random.randint(2**(size_in-2),2**(size_in-1)) for i in range(how_many)]
-    b_input = [random.randint(0,2**(size_in-2)) for i in range(how_many)]
-    values = str(a_input) + str(b_input)
-    true_result = [int(x) for i in range(how_many) for x in base_in.format(a_input[i]-b_input[i])]
-    a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    add = [0 for _ in range(size_in + 1)]
-    add.extend(a_input)
-    a_input = add
-    b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    
-    subtractor = Subtractor_circuit(how_many, size_in)
+    subtractor = Subtractor_circuit(how_many, input_size)
     subtractor.subtractor()
     circuit = "subtractor.json"
     
     res = main(circuit, a_input, b_input)
     view('subtractor', values, true_result, list(res.values())[::-1], verbose)
 
-#DONT TOUCH, IT WORKS
-def test_sieve(how_many, size_in, verbose=True):
-    base_in = '{:0' + str(size_in) + 'b}'
+def test_sieve(how_many, input_size, verbose=True):
+    start = setup(how_many, input_size)
+    a_input = start['a_input']
+    b_input = start['b_input']
+    true_result = start['true_result'][1]
+    values = start['values'][1]
     
-    a_input = [random.randint(0,1)*random.randint(0,9) for i in range(how_many)]
-    values = a_input
-    true_result = [0 if x == 0 else 1 for x in a_input]
-    a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    add = [0 for _ in range(size_in + 1)]
-    add.extend(a_input)
-    a_input = add
-    
-    sieve = Sieve_circuit(how_many, size_in)
+    sieve = Sieve_circuit(how_many, input_size)
     sieve.sieve()
     circuit = "sieve.json"
-    
-    b_input = [random.randint(0,2**(size_in-2)) for i in range(how_many)]
-    b_input = [int(x) for b in b_input for x in base_in.format(b)]
     
     res = main(circuit, a_input, b_input)
     view('sieve', values, true_result, list(res.values()), verbose)
@@ -272,54 +257,53 @@ def test_adder1(how_many, input_size, verbose=True):
     base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
     base_in = '{:0' + str(input_size) + 'b}'
     
-    a_input = [random.randint(0,1)*random.randint(0,9) for i in range(how_many)]
-    values = input
-    true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(a_input))) for x in i]
+    a_input = [random.randint(0,9) for i in range(how_many)]
+    
     a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    print(len(a_input))
     add = [0 for _ in range(input_size + 1)]
-    print(len(add))
     add.extend(a_input)
     a_input = add
     
     
-    b_input = [random.randint(0,2**(input_size-2)) for i in range(how_many)]
+    b_input = [random.randint(0,2**(input_size) -1) for i in range(how_many)]
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
+    values = b_input[:how_many]
+    true_result = [int(x) for i in base_out.format(sum([1 if i != 0 else 0 for i in values])) for x in i]
     
-    adder = Adder1_circuit(how_many, input_size)
+    adder = Adder1(how_many, input_size)
     adder.adder1()
     circuit = "adder1.json"
     
     res = main(circuit, a_input, b_input)
-    view('adder', values, true_result, list(res.values())[::-1], verbose)
+    view('adder1', values, true_result, list(res.values())[::-1], verbose)
 
 def test_adder2(how_many, input_size, verbose=True):
-    base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
     base_in = '{:0' + str(input_size) + 'b}'
     
-    a_input = [random.randint(0,1)*random.randint(0,9) for i in range(how_many)]
-    values = input
-    true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(a_input))) for x in i]
+    a_input = [random.randint(0,9) for i in range(how_many)]
+    
     a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    print(len(a_input))
-    add = [random.randint(0,1) for _ in range(input_size + 1)]
-    print(len(add))
+    add = [0 for _ in range(input_size + 1)]
     add.extend(a_input)
     a_input = add
     
     
-    b_input = [random.randint(0,2**(input_size-2)) for i in range(how_many)]
+    b_input = [random.randint(0,2**(input_size) -1) for i in range(how_many)]
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
+    box = b_input[:math.ceil(math.log(how_many + 0.1, 2))]
+    values = int(''.join(str(e) for e in box),2)
+    true_result = box
     
-    adder = Adder2_circuit(how_many, input_size)
+    
+    adder = Adder2(how_many, input_size)
     adder.adder2()
-    circuit = "adder1.json"
+    circuit = "adder2.json"
     
     res = main(circuit, a_input, b_input)
-    view('adder', values, true_result, list(res.values())[::-1], verbose)
+    view('adder2', values, true_result, list(res.values()), verbose)
 
-def test_complete1(how_many, size_in, verbose=True):
-    base_in = '{:0' + str(size_in) + 'b}'
+def test_complete1(how_many, input_size, verbose=True):
+    base_in = '{:0' + str(input_size) + 'b}'
     base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
     
     for _ in range(100):
@@ -329,7 +313,7 @@ def test_complete1(how_many, size_in, verbose=True):
         input = [int(x) for a in input for x in base_in.format(a)]
         input.insert(0,0)
         
-        counter = Adder1_circuit(how_many, size_in)
+        counter = Adder1_circuit(how_many, input_size)
         counter.counter()
         counter.adder()
         circuit = "adder2.json"
@@ -337,12 +321,12 @@ def test_complete1(how_many, size_in, verbose=True):
         res = main(circuit, input, [0])
         view('counter',values, true_result, list(res.values())[::-1], verbose)
 
-def test_complete2(how_many, size_in, verbose=True):
-    base_in = '{:0' + str(size_in) + 'b}'
+def test_complete2(how_many, input_size, verbose=True):
+    base_in = '{:0' + str(input_size) + 'b}'
     base_out = '{:0' + str(math.ceil(math.log(how_many,2))) + 'b}'
     
-    a_input = [random.randint(2**(size_in-2),2**(size_in-1)) for i in range(how_many)]
-    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(size_in-2)) for i in range(how_many)]
+    a_input = [random.randint(2**(input_size-2),2**(input_size-1)) for i in range(how_many)]
+    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(input_size-2)) for i in range(how_many)]
     values = str(a_input) + str(b_input)
     
     true_result = base_out.format(sum([0 if a_input[i]-b_input[i] == 0 else 1 for i in range(how_many)]))
@@ -350,11 +334,11 @@ def test_complete2(how_many, size_in, verbose=True):
     
 
     a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    add = [0 for _ in range(size_in + 1)]
+    add = [0 for _ in range(input_size + 1)]
     add.extend(a_input)
     a_input = add
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    counter = Complete_circuit(how_many, size_in)
+    counter = Complete_circuit(how_many, input_size)
     counter.subtractor(lonely=True)
     counter.filter()
     counter.adder1()
@@ -363,14 +347,14 @@ def test_complete2(how_many, size_in, verbose=True):
     res = main(circuit, a_input, b_input)
     view('filter', values, true_result, list(res.values())[::-1], verbose)
 
-def test_complete3(how_many, size_in, verbose=True):
-    base_in = '{:0' + str(size_in) + 'b}'
+def test_complete3(how_many, input_size, verbose=True):
+    base_in = '{:0' + str(input_size) + 'b}'
     base_out = '{:0' + str(math.ceil(math.log(how_many+0.1,2))) + 'b}'
     print(base_out)
     r = random.randint(0,2**math.ceil(math.log(how_many,2)-1)-1)
     print(r)
-    a_input = [random.randint(2**(size_in-2),2**(size_in-1)) for i in range(how_many)]
-    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(size_in-2)) for i in range(how_many)]
+    a_input = [random.randint(2**(input_size-2),2**(input_size-1)) for i in range(how_many)]
+    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(input_size-2)) for i in range(how_many)]
     values = str(a_input) + str(b_input)
     
     true_result = base_out.format(sum([0 if a_input[i]-b_input[i] == 0 else 1 for i in range(how_many)])+r )
@@ -384,7 +368,7 @@ def test_complete3(how_many, size_in, verbose=True):
     a_input.insert(0,0)
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
     
-    counter = Complete_circuit(how_many, size_in)
+    counter = Complete_circuit(how_many, input_size)
     counter.subtractor()
     counter.sieve()
     counter.adder1()
@@ -401,10 +385,49 @@ def view(test, values, true_result, output, verbose):
         print('True Result:   ', true_result)
         print('Circuit Output:', output)
     assert output == true_result
-    print('Tests ran successfully')
+    print('Test ran successfully')
     print('\n')
 
-test_subtractor(5,32)
+def setup(how_many, input_size):
+    base_in = '{:0' + str(input_size) + 'b}'
+    base_out = '{:0' + str(math.ceil(math.log(how_many+0.1,2))) + 'b}'
+    
+    r = random.randint(0,2**math.ceil(math.log(how_many,2)-1)-1)
+    
+    a_input = [random.randint(2**(input_size-1),2**(input_size)-1) for i in range(how_many)]
+    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(input_size-1)) for i in range(how_many)]
+    values = ['\n' + str(a_input) + '\n' + str(b_input)]
+    true_result = []
+    true_result1 = [a_input[i] - b_input[i] for i in range(how_many)]
+    values.append(true_result1)
+    true_result.append([int(x) for a in true_result1 for x in base_in.format(a)])
+    true_result2 = [0 if i == 0 else 1 for i in true_result1]
+    values.append(true_result2)
+    true_result.append(true_result2)
+    true_result3 = sum(true_result2)
+    values.append(true_result3)
+    true_result.append([int(x) for x in base_out.format(true_result3)])
+    true_result4 = true_result3 + r
+    values.append(true_result4)
+    true_result.append([int(x) for x in base_out.format(true_result4)])
+    
+    
+    a_input = [int(x) for a in a_input for x in base_in.format(a)]
+    add = [int(x) for x in base_out.format(r)]
+    add.extend(a_input)
+    a_input = add
+    a_input.insert(0,0)
+    b_input = [int(x) for b in b_input for x in base_in.format(b)]
+    return {'a_input': a_input, 'b_input': b_input, 'values': values, 'true_result': true_result}
+
+
+
+
+
+
+
+
 test_sieve(5,32)
+
 
 

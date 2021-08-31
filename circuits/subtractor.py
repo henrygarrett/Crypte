@@ -9,9 +9,6 @@ import json
 from circuits.circuit import Circuit
 
 class Subtractor_circuit(Circuit):
-    def __init__(self, number_of_elements, input_size):
-        super().__init__(number_of_elements, input_size)
-        
     def subtractor(self):
         difference= []
         for i in range(self.number_of_elements * self.input_size):
@@ -23,13 +20,18 @@ class Subtractor_circuit(Circuit):
         self.circuit['out'] = difference
         with open('subtractor.json','w') as file:
             json.dump(self.dictionary, file)
-        
+
+
     def half_subtractor(self, alice, bob):
-        start = max(self.circuit['bob'])
+        start = [self.circuit['gates'][-1]['id']]
+        start.extend(self.circuit['alice'])
+        start.extend(self.circuit['bob'])
+        start = max(start)
         self.circuit['gates'].append({"id": start + 1, "type": "XOR", "in": [alice, bob]})
         self.circuit['gates'].append({"id": start + 2, "type": "NOTAND", "in": [alice, bob]})
         self.carry = start + 2
         return start + 1      
+
     def full_subtractor(self, alice, bob):
         start = self.circuit['gates'][-1]['id']
         self.circuit['gates'].append({"id": start + 1, "type": "XOR", "in": [alice, bob]})
