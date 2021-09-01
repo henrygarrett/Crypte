@@ -15,8 +15,6 @@ class Adder2(Circuit):
         second adder circuit for adding final mask to count
         '''
         total = []
-        if self.adder2_input == []:
-            self.adder2_input = self.circuit['bob'][:self.adder1_output_size]
         input2 = self.circuit['alice'][1 : self.adder1_output_size + 1][::-1]
         for j in range(self.adder1_output_size):
             if j == 0:

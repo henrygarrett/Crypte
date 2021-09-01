@@ -20,6 +20,7 @@ class Circuit():
         self.dictionary = {"name": "Test","circuits": [{"id": "counter","alice": None,"bob": None,"out": None,"gates": []}]}
         self.circuit = self.dictionary['circuits'][0]
         alice_length = self.input_size*self.number_of_elements + self.adder1_output_size + 1
+        print(alice_length)
         self.circuit['alice'] = [i for i in range(alice_length)] # additional input gate so alice can add a zero input
         self.circuit['bob'] =   [i for i in range(alice_length, alice_length + self.input_size*self.number_of_elements)]
         

@@ -14,17 +14,36 @@ class Sieve_circuit(Circuit):
         
     def sieve(self):
         #RETURNS 0 IF NUMBER IS 0, 1 O/W
-        if self.sieve_inputs == []:
-            self.sieve_inputs = [i*self.input_size + self.input_size + j for i in range(self.number_of_elements) for j in range(1, self.input_size + 1)]
-        for i in range(self.number_of_elements):
-            for j in range(1, self.input_size):
-                if j == 1:
-                    start = max(self.circuit['alice']) if i == 0 else self.circuit['gates'][-1]['id']
-                    self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [i*self.input_size + self.input_size + 1,i*self.input_size + self.input_size + 2]})
-                else:
-                    start = self.circuit['gates'][-1]['id']
-                    self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [start, i*self.input_size + self.input_size + j + 1]})
-            self.adder1_inputs.append(self.circuit['gates'][-1]['id'])
+        print(len(self.sieve_inputs)-1)
+        for i in range(len(self.sieve_inputs)-1):
+            
+            if i%self.input_size == 0:
+                print(i)
+                start = max([self.circuit['gates'][-1]['id']] + self.circuit['alice'] + self.circuit['bob'])
+                self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [self.sieve_inputs[i],self.sieve_inputs[i+1]]})
+            
+            
+            elif i%self.input_size == self.input_size - 1:
+                print(i)
+                pass
+            
+            
+            else:
+                start = self.circuit['gates'][-1]['id']
+                self.circuit['gates'].append({"id": start + 1, "type": "OR", "in": [start, self.sieve_inputs[i+1]]})
+        
+            
+        
+        
+        
+        
+        
+        
+        
+            if i%self.input_size == self.input_size - 2:
+                self.adder1_inputs.append(self.circuit['gates'][-1]['id'])
+        
+        
         self.circuit['out'] = self.adder1_inputs
         with open('sieve.json','w') as file:
             json.dump(self.dictionary, file)

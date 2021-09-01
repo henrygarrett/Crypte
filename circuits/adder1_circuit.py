@@ -16,7 +16,6 @@ class Adder1(Circuit):
     
     def adder1(self):
         total = []
-        self.adder1_input = self.circuit['bob'][:self.number_of_elements]
         for i in range(self.number_of_elements - 1):
             for j in range(self.adder1_output_size):
                 if j == 0:

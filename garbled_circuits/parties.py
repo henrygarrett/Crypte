@@ -229,8 +229,8 @@ def test_subtractor(how_many, input_size, verbose=True):
     start = setup(how_many, input_size)
     a_input = start['a_input']
     b_input = start['b_input']
-    true_result = start['true_result'][0]
-    values = start['values'][0]
+    true_result = start['true_result'][2]
+    values = start['true_result'][0]
     
     subtractor = Subtractor_circuit(how_many, input_size)
     subtractor.subtractor()
@@ -241,12 +241,13 @@ def test_subtractor(how_many, input_size, verbose=True):
 
 def test_sieve(how_many, input_size, verbose=True):
     start = setup(how_many, input_size)
-    a_input = start['a_input']
+    a_input = start['a_input'][1]
     b_input = start['b_input']
-    true_result = start['true_result'][1]
-    values = start['values'][1]
+    true_result = start['true_result'][3]
+    values = start['true_result'][1]
     
-    sieve = Sieve_circuit(how_many, input_size)
+    sieve = Complete_circuit(how_many, input_size)
+    sieve.sieve_inputs = start['true_result'][2]
     sieve.sieve()
     circuit = "sieve.json"
     
@@ -396,29 +397,40 @@ def setup(how_many, input_size):
     
     a_input = [random.randint(2**(input_size-1),2**(input_size)-1) for i in range(how_many)]
     b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(input_size-1)) for i in range(how_many)]
-    values = ['\n' + str(a_input) + '\n' + str(b_input)]
-    true_result = []
+    
+    
     true_result1 = [a_input[i] - b_input[i] for i in range(how_many)]
-    values.append(true_result1)
-    true_result.append([int(x) for a in true_result1 for x in base_in.format(a)])
-    true_result2 = [0 if i == 0 else 1 for i in true_result1]
-    values.append(true_result2)
+    true_result2 = [int(x) for a in true_result1 for x in base_in.format(a)]
+    true_result3 = [0 if i == 0 else 1 for i in true_result1]
+    true_result4 = true_result3
+    true_result5 = sum(true_result3)
+    true_result6 = [int(x) for x in base_out.format(true_result5)]
+    true_result7 = true_result5 + r
+    true_result8 = [int(x) for x in base_out.format(true_result7)]
+    
+    true_result = ['\n' + str(a_input) + '\n' + str(b_input)]
+    true_result.append(true_result1)
     true_result.append(true_result2)
-    true_result3 = sum(true_result2)
-    values.append(true_result3)
-    true_result.append([int(x) for x in base_out.format(true_result3)])
-    true_result4 = true_result3 + r
-    values.append(true_result4)
-    true_result.append([int(x) for x in base_out.format(true_result4)])
+    true_result.append(true_result3)
+    true_result.append(true_result4)
+    true_result.append(true_result5)
+    true_result.append(true_result6)
+    true_result.append(true_result7)
+    true_result.append(true_result8)
     
-    
-    a_input = [int(x) for a in a_input for x in base_in.format(a)]
+    length = input_size*how_many + math.ceil(math.log(how_many + 0.1, 2)) + 1
+    a_input1 = [int(x) for a in a_input for x in base_in.format(a)]
+    a_input2 = [int(x) for a in true_result1 for x in base_in.format(a)]
     add = [int(x) for x in base_out.format(r)]
-    add.extend(a_input)
-    a_input = add
-    a_input.insert(0,0)
+    add.insert(0,0)
+    a_input1 = add + a_input1
+    a_input2 = add + a_input2
+    a_input3 = true_result3 + [0 for _ in range(length-len(true_result3))]
+    a_input4 = true_result6 + [0 for _ in range(length-len(true_result6))]
+    a_input = [a_input1, a_input2, a_input3, a_input4]
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    return {'a_input': a_input, 'b_input': b_input, 'values': values, 'true_result': true_result}
+    
+    return {'a_input': a_input, 'b_input': b_input, 'true_result': true_result}
 
 
 

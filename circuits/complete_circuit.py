@@ -13,7 +13,7 @@ class Complete_circuit(Subtractor_circuit, Adder1, Adder2, Sieve_circuit):
     def __init__(self, number_of_elements, input_size):
         super().__init__(number_of_elements, input_size)
     
-    def subtractor():
+    def subtractor(self):
         super().subtractor()
 
     def sieve(self):

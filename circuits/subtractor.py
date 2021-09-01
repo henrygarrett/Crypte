@@ -17,6 +17,7 @@ class Subtractor_circuit(Circuit):
             else:
                 difference.append(self.full_subtractor(self.circuit['alice'][-i-1],self.circuit['bob'][-i-1]))
         self.sieve_inputs = difference
+        print(self.sieve_inputs)
         self.circuit['out'] = difference
         with open('subtractor.json','w') as file:
             json.dump(self.dictionary, file)
