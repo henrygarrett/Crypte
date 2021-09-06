@@ -21,7 +21,7 @@ class Adder2(Circuit):
                 total.append(self.half_adder(self.adder2_input.pop(0), input2[j]))
             else:
                 total.append(self.full_adder(self.adder2_input.pop(0), input2[j]))
-
+        total = total[::-1]
         self.circuit['out'] = total
         with open('adder2.json','w') as file:
             json.dump(self.dictionary, file)

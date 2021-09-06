@@ -227,7 +227,7 @@ def main(circuits, a_input, b_input):
 
 def test_subtractor(how_many, input_size, verbose=True):
     start = setup(how_many, input_size)
-    a_input = start['a_input'][0]
+    a_input = start['a_input']
     b_input = start['b_input']
     true_result = start['true_result'][2]
     values = start['true_result'][0]
@@ -259,10 +259,10 @@ def test_sieve(how_many, input_size, verbose=True):
 
 def test_adder1(how_many, input_size, verbose=True):
     start = setup(how_many, input_size)
-    a_input = start['a_input'][1]
+    a_input = start['a_input']
     b_input = start['b_input']
-    true_result = start['true_result'][3]
-    values = start['true_result'][1]
+    true_result = start['true_result'][7]
+    values = start['true_result'][3]
 
     adder = Complete_circuit(how_many, input_size)
     adder.subtractor()
@@ -276,10 +276,10 @@ def test_adder1(how_many, input_size, verbose=True):
 
 def test_adder2(how_many, input_size, verbose=True):
     start = setup(how_many, input_size)
-    a_input = start['a_input'][1]
+    a_input = start['a_input']
     b_input = start['b_input']
-    true_result = start['true_result'][3]
-    values = start['true_result'][1]
+    true_result = start['true_result'][9]
+    values = start['true_result'][6]
 
     adder = Complete_circuit(how_many, input_size)
     adder.subtractor()
@@ -331,12 +331,13 @@ def setup(how_many, input_size):
     true_result3 = [0 if i == 0 else 1 for i in true_result1]
     true_result4 = true_result3
     true_result5 = sum(true_result3)
-    true_result6 = [int(x) for x in base_out.format(true_result5)]
-    true_result7 = true_result5 + r
-    true_result8 = [int(x) for x in base_out.format(true_result7)]
+    true_result6 = [true_result5,r]
+    true_result7 = [int(x) for x in base_out.format(true_result5)]
+    true_result8 = true_result5 + r
+    true_result9 = [int(x) for x in base_out.format(true_result8)]
     
     true_result = [true_result0, true_result1, true_result2, true_result3, true_result4,
-                   true_result5, true_result6, true_result7, true_result8]
+                   true_result5, true_result6, true_result7, true_result8,true_result9]
     length = input_size*how_many + math.ceil(math.log(how_many + 0.1, 2)) + 1
     a_input = [int(x) for a in a_input for x in base_in.format(a)]
     add = [int(x) for x in base_out.format(r)]
@@ -346,4 +347,4 @@ def setup(how_many, input_size):
     
     return {'a_input': a_input, 'b_input': b_input, 'true_result': true_result}
 
-test_sieve(5,32)
+test_adder2(5,32)
