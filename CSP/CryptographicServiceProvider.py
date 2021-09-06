@@ -74,6 +74,7 @@ class CryptographicServiceProvider():
             return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2*sensitivity)/privacy_parameter) for value in data]
         else:
             raise Exception('Privacy Budget Exceeded')
+<<<<<<< Updated upstream
 
 
     def noisy_max(self, data, sensitivity, privacy_parameter, k):
@@ -86,3 +87,8 @@ class CryptographicServiceProvider():
         vector_clear = [vector_decrypted[i] - M[i] for i in range(len(vector_decrypted))]
         indices = sorted(range(len(vector_clear)), key=lambda i: vector_clear[i], reverse=True)[:k]
         return indices
+=======
+    def count_distinct(self, masked_vector):
+        r = random.randint(0,10**40)
+        return [self.key_manager.private_key.lab_decrypt(value) for value in masked_vector], random.randint(0,10**40), r, self.key_manager.public_key.lab_encrypt(r)
+>>>>>>> Stashed changes

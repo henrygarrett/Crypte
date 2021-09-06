@@ -257,6 +257,7 @@ def test_group_by_count_encoded(verbose=True):
     assert result == true_value
     return True
 
+<<<<<<< Updated upstream
 # Tests Count Distinct Operator works correctly
 def test_count_distinct(verbose=True):
     input_data = [AS.program_executor.public_key.lab_encrypt(10),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(1),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(11),AS.program_executor.public_key.lab_encrypt(23)]
@@ -272,6 +273,24 @@ def test_count_distinct(verbose=True):
     return True
 
 # Tests the Laplace Operator works correctly
+=======
+
+def test_count_distinct(verbose=True):
+    input_data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
+    test_output = AS.program_executor.count_distinct(input_data, CSP)
+    true_value = 2
+    
+    if verbose:
+        print("TEST: Group Distinct")
+        print("Test Result:", test_output)
+        print("True Value:", true_value)
+
+    assert test_output == true_value
+    return True
+    
+    
+    
+>>>>>>> Stashed changes
 def test_laplace(verbose=True):
     data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     if verbose:
@@ -323,6 +342,11 @@ def test_noisy_max(verbose=True):
 # test_cross_product()
 # test_group_by_count()
 # test_group_by_count_encoded()
+<<<<<<< Updated upstream
 # test_laplace()
 # test_count_distinct()
 # test_noisy_max()
+=======
+#test_laplace()
+test_count_distinct()
+>>>>>>> Stashed changes

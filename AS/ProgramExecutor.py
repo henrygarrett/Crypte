@@ -97,6 +97,7 @@ class ProgramExecutor():
         return [rightRotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]
     
     def count_distinct(self, input_vector, CSP):
+<<<<<<< Updated upstream
         M = [random.randint(0,10**9) for _ in range(len(input_vector))]
         vector_masked = [input_vector[i]._lab_add_encrypted(self.public_key.lab_encrypt(M[i])) for i in range(len(M))]
         vector_decrypted = CSP.count_distinct(vector_masked)
@@ -105,10 +106,18 @@ class ProgramExecutor():
         count_encrypted = self.public_key.lab_encrypt(count_masked)._lab_subtract_encrypted(r_enc)
         return count_encrypted
 
+=======
+        M = [self.public_key.lab_encrypt(random.randint(0,10**40)) for _ in input_vector]
+        vector_masked = [input_vector[i]._lab_add_encrypted(M[i]) for i in range(len(M))]        
+        plain_vector, r, r_enc = CSP.count_distinct(vector_masked)
+        count_masked = self.garbled_circuit(mask, plain_vector, r)
+        return self.public_key.lab_encrypt(count_masked) - r_enc
+>>>>>>> Stashed changes
     def laplace(self, data, privacy_parameter, CSP):
         data = data if type(data) == list else [data]
         noisy_data = [value._lab_add_encrypted(self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*self.sensitivity)/privacy_parameter))) for value in data]
         return CSP.laplace(noisy_data, self.sensitivity, privacy_parameter)
+<<<<<<< Updated upstream
     
     def noisy_max(self, data, privacy_parameter, CSP, k):
          M = [random.randint(0,10**9) for _ in range(len(data))]
@@ -117,3 +126,7 @@ class ProgramExecutor():
          noisy_data = [data[i]._lab_add_encrypted(noise[i])._lab_add_encrypted(M_enc[i]) for i in range(len(data))]
          data_decrypted = CSP.noisy_max(noisy_data, self.sensitivity, privacy_parameter, k)
          return CSP.garbled_circuitnm(M, data_decrypted, k)
+=======
+    def garbled_circuit(self, mask, plain_vector, r):
+        return sum([plain_vector[i]-mask[i]]) + r
+>>>>>>> Stashed changes
