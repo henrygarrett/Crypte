@@ -203,7 +203,6 @@ class Bob:
 # ------- Setup and helper functions ----------
 
 
-# Simple 2-input/output AND test
 def main(circuits, a_input, b_input):
     alice = Alice(a_input, circuits)
     #alice.circuits[0]['garbled_circuit'].print_garbled_tables()
@@ -228,6 +227,7 @@ def main(circuits, a_input, b_input):
 
     res = bob.evaluate(a_inputs, b_inputs_encr) # Bob evaluates circuit on encrypted inputs
     return res
+
 
 def view(test, values, true_result, output, verbose):
     if verbose:
@@ -335,7 +335,7 @@ def test_adder2(how_many, input_size, verbose=False):
     adder.sieve()
     adder.adder1()
     adder.adder2()
-    circuit = "adder2.json"
+    circuit = "circuit.json"
     
     res = main(circuit, a_input, b_input)
     view('adder2', values, true_result, list(res.values()), verbose)
@@ -345,3 +345,4 @@ for i in range(0,10):
     test_sieve(5,32)
     test_adder1(5,32)
     test_adder2(5,32)
+
