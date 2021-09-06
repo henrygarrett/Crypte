@@ -1,16 +1,17 @@
-# from pathlib import Path
-# path = str(Path.cwd().parents[2])#index needs to be set for cwd which will likely be where operators are run not this file
-
 from .PrivacyEngine import PrivacyEngine
 from .KeyManager import KeyManager
 import numpy as np
 import random
+import math
+from circuits.complete_circuit import Complete_circuit
+from garbled_circuits.parties import Alice
 
 class CryptographicServiceProvider():
     def __init__(self, epsilon_budget, generate_keys=False):
         self.privacy_engine = PrivacyEngine(epsilon_budget)
         self.key_manager = KeyManager(generate_keys)
         self.__r = None
+        self.alice = None
 
     def __str__(self):
         return "CryptographicServiceProvider" + str(
@@ -52,30 +53,18 @@ class CryptographicServiceProvider():
                     return_vector[i].append(1)
         return_vector_encrypted = [[public_key.lab_encrypt(bit) for bit in value] for value in return_vector]
         return return_vector_encrypted
-    
-    def count_distinct(self, vector_masked):
-        vector_decrypted = [self.key_manager.private_key.lab_decrypt(i) for i in vector_masked]
-        return vector_decrypted
-
-    def random_r(self):
-        r = random.randint(0,10**9)
-        self.__r = r
-        return self.key_manager.public_key.lab_encrypt(r)
 
     def garbled_circuitcd(self, M, vector_decrypted):
         r = self.__r
         vector_clear = [vector_decrypted[i] - M[i] for i in range(len(M))]
         count_masked = np.count_nonzero(vector_clear) + r
         return count_masked
-    
-    
+
     def laplace(self, data, sensitivity, privacy_parameter):
         if self.privacy_engine.is_program_allowed(privacy_parameter):
             return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2*sensitivity)/privacy_parameter) for value in data]
         else:
             raise Exception('Privacy Budget Exceeded')
-<<<<<<< Updated upstream
-
 
     def noisy_max(self, data, sensitivity, privacy_parameter, k):
         if self.privacy_engine.is_program_allowed(privacy_parameter):
@@ -87,8 +76,36 @@ class CryptographicServiceProvider():
         vector_clear = [vector_decrypted[i] - M[i] for i in range(len(vector_decrypted))]
         indices = sorted(range(len(vector_clear)), key=lambda i: vector_clear[i], reverse=True)[:k]
         return indices
-=======
-    def count_distinct(self, masked_vector):
-        r = random.randint(0,10**40)
-        return [self.key_manager.private_key.lab_decrypt(value) for value in masked_vector], random.randint(0,10**40), r, self.key_manager.public_key.lab_encrypt(r)
->>>>>>> Stashed changes
+
+    def count_distinct(self, vector_masked):
+        how_many = len(vector_masked)
+        input_size = 32 # arbitrary. needs to allow for size of input
+        base_in = '{:0' + str(input_size) + 'b}'
+        base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1, 2))) + 'b}'
+
+        circuit = Complete_circuit(how_many, input_size)
+        circuit.subtractor()
+        circuit.sieve()
+        circuit.adder1()
+        circuit.adder2()
+        circuit_file = "circuit.json"
+
+        r = random.randint(0, 7)
+        a_input = [self.key_manager.private_key.lab_decrypt(i) for i in vector_masked]
+        a_input = [int(x) for a in a_input for x in base_in.format(a)]
+        add = [int(x) for x in base_out.format(r)]
+        add.insert(0, 0)
+        a_input = add + a_input
+
+        print(circuit_file)
+        self.alice = Alice(a_input, circuit_file)
+        self.alice.garble_circuits()  # Garbles circuits, alice stores them
+        garbled_circuit = self.alice.garbled_circuits[0]  # only need one circuit
+        a_inputs = self.alice.send_inputs
+        return {'garbled_circuit': garbled_circuit, 'a_inputs': a_inputs}
+
+    def ot_send(self):
+        return self.alice.ot_send()
+
+    def ot_receive(self, w, h0):
+        return self.alice.ot_receive(w, h0)

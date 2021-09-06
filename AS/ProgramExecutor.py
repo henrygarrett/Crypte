@@ -2,6 +2,8 @@ import math
 import random
 import numpy as np
 import copy
+from garbled_circuits.parties import Bob
+import pickle
 
 class ProgramExecutor():
     def __init__(self, public_key, num_rows, num_attr):
@@ -9,6 +11,7 @@ class ProgramExecutor():
         self.num_rows = num_rows # Number of rows in the dataset
         self.num_attr = num_attr # Number of attributes in the dataset
         self.sensitivity = 1
+        self.bob = None
         # Both of the above are needed for filtering
 
     def reset_sensitivity(self):
@@ -20,8 +23,8 @@ class ProgramExecutor():
             vector1 = element.pop(attribute1)
             vector2 = element.pop(attribute2 if attribute1 > attribute2 else attribute2 - 1)
             vector_new = []
-            for i in range(len(vector1)*len(vector2)):
-                vector_new.append(self.public_key.general_lab_multiplication(vector1[math.floor(i/len(vector2))], vector2[i%len(vector2)], CSP))
+            for j in range(len(vector1)*len(vector2)):
+                vector_new.append(self.public_key.general_lab_multiplication(vector1[math.floor(j/len(vector2))], vector2[j%len(vector2)], CSP))
             element.append(vector_new)
         return new_data_set
 
@@ -97,28 +100,34 @@ class ProgramExecutor():
         return [rightRotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]
     
     def count_distinct(self, input_vector, CSP):
-<<<<<<< Updated upstream
-        M = [random.randint(0,10**9) for _ in range(len(input_vector))]
-        vector_masked = [input_vector[i]._lab_add_encrypted(self.public_key.lab_encrypt(M[i])) for i in range(len(M))]
-        vector_decrypted = CSP.count_distinct(vector_masked)
-        r_enc = CSP.random_r()
-        count_masked = CSP.garbled_circuitcd(M, vector_decrypted)
-        count_encrypted = self.public_key.lab_encrypt(count_masked)._lab_subtract_encrypted(r_enc)
-        return count_encrypted
-
-=======
+        input_size = 32  # arbitrary. needs to allow for size of input
+        base_in = '{:0' + str(input_size) + 'b}'
         M = [self.public_key.lab_encrypt(random.randint(0,10**40)) for _ in input_vector]
-        vector_masked = [input_vector[i]._lab_add_encrypted(M[i]) for i in range(len(M))]        
-        plain_vector, r, r_enc = CSP.count_distinct(vector_masked)
-        count_masked = self.garbled_circuit(mask, plain_vector, r)
-        return self.public_key.lab_encrypt(count_masked) - r_enc
->>>>>>> Stashed changes
+        b_input = [int(x) for b in M for x in base_in.format(b.message_obfuscated)]
+        self.bob = Bob(b_input)
+        vector_masked = [input_vector[i]._lab_add_encrypted(M[i]) for i in range(len(M))]
+        csp_return = CSP.count_distinct(vector_masked)
+
+        garbled_circuit = csp_return['garbled_circuit']
+        a_inputs = csp_return['a_inputs']
+        b_inputs = self.bob.receive_circuits_and_inputs(garbled_circuit)
+        b_inputs_encr = {}
+
+        for w, b in b_inputs:
+            G, c = CSP.ot_send()
+            h0 = self.bob.ot_send(b, G, c)
+            c1, e0, e1 = CSP.ot_receive(w, h0)
+            b_inputs_encr[w] = pickle.loads(self.bob.ot_receive(b, c1, e0, e1))
+
+        res = self.bob.evaluate(a_inputs, b_inputs_encr)  # Bob evaluates circuit on encrypted inputs
+        return list(res.values())
+
+
     def laplace(self, data, privacy_parameter, CSP):
         data = data if type(data) == list else [data]
         noisy_data = [value._lab_add_encrypted(self.public_key.lab_encrypt(np.random.default_rng().laplace(scale=(2*self.sensitivity)/privacy_parameter))) for value in data]
         return CSP.laplace(noisy_data, self.sensitivity, privacy_parameter)
-<<<<<<< Updated upstream
-    
+
     def noisy_max(self, data, privacy_parameter, CSP, k):
          M = [random.randint(0,10**9) for _ in range(len(data))]
          M_enc = [self.public_key.lab_encrypt(m) for m in M]
@@ -126,7 +135,6 @@ class ProgramExecutor():
          noisy_data = [data[i]._lab_add_encrypted(noise[i])._lab_add_encrypted(M_enc[i]) for i in range(len(data))]
          data_decrypted = CSP.noisy_max(noisy_data, self.sensitivity, privacy_parameter, k)
          return CSP.garbled_circuitnm(M, data_decrypted, k)
-=======
-    def garbled_circuit(self, mask, plain_vector, r):
+
+    def garbled_circuit(self, mask, plain_vector, r, i):
         return sum([plain_vector[i]-mask[i]]) + r
->>>>>>> Stashed changes

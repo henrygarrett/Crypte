@@ -2,7 +2,7 @@
 """
 Created on Wed Jul 28 09:51:30 2021
 
-@author: madma
+@author: henry
 """
 import pickle
 import os
@@ -11,7 +11,6 @@ import numpy as np
 
 from CSP.CryptographicServiceProvider import CryptographicServiceProvider
 from AS.AnalyticsServer import AnalyticsServer
-
 
 def init_crypte(ask_prompt=True, verbose=True):
     if (not ask_prompt) or (input('Replace budget, keys and data? y/n\n') != 'y'):
@@ -76,6 +75,7 @@ def test_encode_decode(verbose=True):
     assert decoded_data == raw_data
     return True
 
+
 def test_encrypt_decrypt(verbose=True):
     decrypted_data = int(CSP.key_manager.private_key.lab_decrypt(CSP.key_manager.public_key.lab_encrypt(10)))
     raw_data = 10
@@ -89,6 +89,7 @@ def test_encrypt_decrypt(verbose=True):
     assert decrypted_data == raw_data
     return True
 
+
 def test_encrypted_data(verbose=True):
     decrypted_data = CSP.decrypt_data(AS.aggregator.data_encrypted)
     
@@ -100,10 +101,13 @@ def test_encrypted_data(verbose=True):
     assert decrypted_data == AS.aggregator.data_encoded
     return True
 
+
 def test_multiply_ciphers(verbose=True):
     cipher1 = CSP.key_manager.public_key.lab_encrypt(47846845)
     cipher2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
-    result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2, CSP.key_manager.public_key.multiply_ciphers(cipher1, cipher2, CSP))
+    result = CSP.key_manager.private_key.lab_multiply_decrypt(cipher1, cipher2,
+                                                              CSP.key_manager.public_key.multiply_ciphers(cipher1,
+                                                                                                          cipher2, CSP))
     if verbose:
         print("TEST: Multiply Ciphers")
         print("True value:", 47846845 * 45879457845)
@@ -112,8 +116,9 @@ def test_multiply_ciphers(verbose=True):
     assert result == 47846845 * 45879457845
     return True
 
+
 # Tests general LabHE multiplication
-def test_HE_mult(verbose=True):
+def test_he_mult(verbose=True):
     ciphertext1 = CSP.key_manager.public_key.lab_encrypt(47846845)
     ciphertext2 = CSP.key_manager.public_key.lab_encrypt(45879457845)
     
@@ -129,7 +134,6 @@ def test_HE_mult(verbose=True):
     return True
 
 
-
 # Tests the Project Operator works correctly
 def test_project(verbose=True):
 
@@ -140,7 +144,8 @@ def test_project(verbose=True):
     query_result = AS.aggregator.decode_data(
         CSP.decrypt_data(AS.program_executor.project(AS.aggregator.data_encrypted, [0, 2])),
         attribute_nums=[0, 2])  # project, decrypt, decode
-    query_result = list(map(lambda x: [str(val) for val in x], query_result))  # Raw data is strings so this is just to make the assert comparison work at the end
+    query_result = list(map(lambda x: [str(value) for value in x], query_result))
+    # Raw data is strings so this is just to make the assert comparison work at the end
 
     # Get the actual filtering answer
     data = AS.aggregator.data.copy()
@@ -162,7 +167,7 @@ def test_project(verbose=True):
         print("\n")
 
     assert projected_raw_data == query_result
-    assert one_attribute_test.shape == (5,1,21)
+    assert one_attribute_test.shape == (5, 1, 21)
     return True
 
 # Tests the Count Operator works correctly
@@ -172,7 +177,8 @@ def test_count(verbose=True):
     # Encrypted bit_vector
     bit_vector_enc = [CSP.key_manager.public_key.lab_encrypt(val) for val in bit_vector]
 
-    query_result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count(bit_vector_enc)) # Count the bit_vector, decrypt
+    query_result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count(bit_vector_enc))
+    # Count the bit_vector, decrypt
 
     if verbose:
         print("TEST: Count Operator")
@@ -183,11 +189,17 @@ def test_count(verbose=True):
     assert query_result == 3
     return True
 
+
 # Tests the Filter operator works correctly
 def test_filter(verbose=True):
-    bit_vector1 = AS.program_executor.filter(AS.aggregator.data_encrypted, [list(np.ones(21, dtype="uint8")), [1, 1, 1, 1, 1], [1, 0]], CSP) # All attributes passed, all attributes predicate
-    bit_vector2 = AS.program_executor.filter(AS.aggregator.data_encrypted, [[1,0]], CSP, predicate_features=[2]) # All attributes passed, single attribute predicate
-    bit_vector3 = AS.program_executor.filter(AS.program_executor.project(AS.aggregator.data_encrypted, 2), [[1,0]], CSP, predicate_features=[2], data_features=[2]) # Single attribute data, single attribute predicate
+    bit_vector1 = AS.program_executor.filter(AS.aggregator.data_encrypted,
+                                             [list(np.ones(21, dtype="uint8")), [1, 1, 1, 1, 1], [1, 0]], CSP)
+    # All attributes passed, all attributes predicate
+    bit_vector2 = AS.program_executor.filter(AS.aggregator.data_encrypted, [[1, 0]], CSP, predicate_features=[2])
+    # All attributes passed, single attribute predicate
+    bit_vector3 = AS.program_executor.filter(AS.program_executor.project(AS.aggregator.data_encrypted, 2), [[1, 0]],
+                                             CSP, predicate_features=[2], data_features=[2])
+    # Single attribute data, single attribute predicate
 
     decrypted_filter1 = CSP.decrypt_bit_vector(bit_vector1)
     decrypted_filter2 = CSP.decrypt_bit_vector(bit_vector2)
@@ -201,19 +213,22 @@ def test_filter(verbose=True):
         print("Single Attribute, Single Predicate Test:", decrypted_filter3)
         print("\n")
 
-    assert decrypted_filter1 == [1,0,0,1,1]
-    assert decrypted_filter2 == [1,0,0,1,1]
-    assert decrypted_filter3 == [1,0,0,1,1]
+    assert decrypted_filter1 == [1, 0, 0, 1, 1]
+    assert decrypted_filter2 == [1, 0, 0, 1, 1]
+    assert decrypted_filter3 == [1, 0, 0, 1, 1]
     return True
+
 
 # Tests the Cross Product Operator works correctly
 def test_cross_product(verbose=True):
     result = AS.program_executor.cross_product(AS.aggregator.data_encrypted, 1, 2, CSP)
-    result = [[[CSP.key_manager.private_key.lab_decrypt(value) for value in attribute]for attribute in row]for row in result]
+    result = [[[CSP.key_manager.private_key.lab_decrypt(value) for value in attribute]
+               for attribute in row]for row in result]
     true_value = []
     for i in range(len(AS.aggregator.data_encoded)):
         true_value.append([])
-        index = AS.aggregator.data_encoded[i][1].index(1)*len(AS.aggregator.data_encoded[i][2]) + AS.aggregator.data_encoded[i][2].index(1)
+        index = AS.aggregator.data_encoded[i][1].index(1)*len(AS.aggregator.data_encoded[i][2])\
+                + AS.aggregator.data_encoded[i][2].index(1)
         length = len(AS.aggregator.data_encoded[i][1])*len(AS.aggregator.data_encoded[i][2])
         true_value[i].append(AS.aggregator.data_encoded[i][0])
         true_value[i].append([1 if i == index else 0 for i in range(length)])
@@ -227,11 +242,12 @@ def test_cross_product(verbose=True):
     assert true_value == result
     return True
 
+
 # Tests the GBC Operator works correctly
 def test_group_by_count(verbose=True):
     result = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     result = [CSP.key_manager.private_key.lab_decrypt(value) for value in result]
-    true_value = [3,2]
+    true_value = [3, 2]
 
     if verbose:
         print("TEST: GBC")
@@ -241,12 +257,13 @@ def test_group_by_count(verbose=True):
     assert result == true_value
     return True
 
+
 # Tests the GBCE Operator works correctly
 def test_group_by_count_encoded(verbose=True):
     
     result = AS.program_executor.group_by_count_encoded(AS.aggregator.data_encrypted, 1, CSP)
     result = [[CSP.key_manager.private_key.lab_decrypt(value) for value in row]for row in result]
-    true_value = [[1,0,0,0,0,0],[0,1,0,0,0,0],[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,0,1,0,0]]
+    true_value = [[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0]]
 
     if verbose:
         print("TEST: GBCE")
@@ -257,24 +274,8 @@ def test_group_by_count_encoded(verbose=True):
     assert result == true_value
     return True
 
-<<<<<<< Updated upstream
+
 # Tests Count Distinct Operator works correctly
-def test_count_distinct(verbose=True):
-    input_data = [AS.program_executor.public_key.lab_encrypt(10),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(1),AS.program_executor.public_key.lab_encrypt(0),AS.program_executor.public_key.lab_encrypt(11),AS.program_executor.public_key.lab_encrypt(23)]
-    result = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count_distinct(input_data, CSP))
-
-    if verbose:
-        print("TEST: Count Distinct")
-        print("Query Result:", result)
-        print("True Value:", 4)
-        print("\n")
-
-    assert result == 4
-    return True
-
-# Tests the Laplace Operator works correctly
-=======
-
 def test_count_distinct(verbose=True):
     input_data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     test_output = AS.program_executor.count_distinct(input_data, CSP)
@@ -287,15 +288,15 @@ def test_count_distinct(verbose=True):
 
     assert test_output == true_value
     return True
-    
-    
-    
->>>>>>> Stashed changes
+
+
+# Tests the Laplace Operator works correctly
 def test_laplace(verbose=True):
     data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
     if verbose:
         print("TEST: Laplace")
-        print("Query Result:", AS.program_executor.laplace(data, 5, CSP))# 5 seems to give reasonable noise on output for our values +/- 2ish
+        print("Query Result:", AS.program_executor.laplace(data, 5, CSP))
+        # 5 seems to give reasonable noise on output for our values +/- 2ish
         print("True Value: [3,2]")
         print("\n")
 
@@ -303,10 +304,13 @@ def test_laplace(verbose=True):
     AS.program_executor.reset_sensitivity()
     return True
 
+
 # Tests the Noisy Max Operator work correctly
 def test_noisy_max(verbose=True):
-    AS.program_executor.sensitivity = 2 # Set sensitivty to 2, to mimic group-by count query
-    input_data = [AS.program_executor.public_key.lab_encrypt(100),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(3),AS.program_executor.public_key.lab_encrypt(5),AS.program_executor.public_key.lab_encrypt(4),AS.program_executor.public_key.lab_encrypt(2)]
+    AS.program_executor.sensitivity = 2 # Set sensitivity to 2, to mimic group-by count query
+    input_data = [AS.program_executor.public_key.lab_encrypt(100), AS.program_executor.public_key.lab_encrypt(4),
+                  AS.program_executor.public_key.lab_encrypt(3), AS.program_executor.public_key.lab_encrypt(5),
+                  AS.program_executor.public_key.lab_encrypt(4), AS.program_executor.public_key.lab_encrypt(2)]
 
     query_result = AS.program_executor.noisy_max(input_data, 5, CSP, 3)
     true_value = CSP.decrypt_bit_vector(input_data)
@@ -323,30 +327,29 @@ def test_noisy_max(verbose=True):
     assert 0 in query_result # Noisy max should at least retrieve the first item that has frequency 100
     return True
 
-# # --- Basic encryption/encoding tests ---
+
+# --- Basic encryption/encoding tests ---
 
 # test_encrypt_decrypt()
 # test_encode_decode()
 # test_encrypted_data()
-
+#
 # # --- Multiplication tests ---
-
+#
 # test_multiply_ciphers()
-# test_HE_mult()
-
+# test_he_mult()
+#
 # # --- Operator tests ---
-
+#
 # test_project()
 # test_count()
 # test_filter()
 # test_cross_product()
 # test_group_by_count()
 # test_group_by_count_encoded()
-<<<<<<< Updated upstream
 # test_laplace()
 # test_count_distinct()
 # test_noisy_max()
-=======
-#test_laplace()
+# test_laplace()
 test_count_distinct()
->>>>>>> Stashed changes
+

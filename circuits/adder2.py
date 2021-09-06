@@ -24,7 +24,7 @@ class Adder2(Circuit):
         total.append(self.carry)# adds the final carry to account for overflow
         total = total[::-1]
         self.circuit['out'] = total
-        with open('adder2.json', 'w') as file:
+        with open('circuit.json', 'w') as file:
             json.dump(self.dictionary, file)
 
 
