@@ -319,7 +319,8 @@ def view(test, values, true_result, output, verbose):
 def setup(how_many, input_size):
     base_in = '{:0' + str(input_size) + 'b}'
     base_out = '{:0' + str(math.ceil(math.log(how_many+0.1, 2))) + 'b}'
-    
+    final_base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1, 2))+1) + 'b}'
+
     r = random.randint(0, 2**math.ceil(math.log(how_many, 2)-1)-1)
     
     a_input = [random.randint(2 ** (input_size-1), 2 ** input_size - 1) for _ in range(how_many)]
@@ -334,7 +335,7 @@ def setup(how_many, input_size):
     true_result6 = [true_result5,r]
     true_result7 = [int(x) for x in base_out.format(true_result5)]
     true_result8 = true_result5 + r
-    true_result9 = [int(x) for x in base_out.format(true_result8)]
+    true_result9 = [int(x) for x in final_base_out.format(true_result8)]
     
     true_result = [true_result0, true_result1, true_result2, true_result3, true_result4,
                    true_result5, true_result6, true_result7, true_result8,true_result9]

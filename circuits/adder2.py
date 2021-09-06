@@ -15,15 +15,16 @@ class Adder2(Circuit):
         second adder circuit for adding final mask to count
         '''
         total = []
-        input2 = self.circuit['alice'][1 : self.adder1_output_size + 1][::-1]
+        input2 = self.circuit['alice'][1: self.adder1_output_size + 1][::-1]
         for j in range(self.adder1_output_size):
             if j == 0:
                 total.append(self.half_adder(self.adder2_input.pop(0), input2[j]))
             else:
                 total.append(self.full_adder(self.adder2_input.pop(0), input2[j]))
+        total.append(self.carry)# adds the final carry to account for overflow
         total = total[::-1]
         self.circuit['out'] = total
-        with open('adder2.json','w') as file:
+        with open('adder2.json', 'w') as file:
             json.dump(self.dictionary, file)
 
 
