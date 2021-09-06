@@ -5,8 +5,8 @@ Created on Thu Aug 26 13:02:52 2021
 @author: Garret_H
 """
 from circuits.subtractor import Subtractor_circuit
-from circuits.adder1_circuit import Adder1
-from circuits.adder2_circuit import Adder2
+from circuits.adder1 import Adder1
+from circuits.adder2 import Adder2
 from circuits.sieve import Sieve_circuit
 
 class Complete_circuit(Subtractor_circuit, Adder1, Adder2, Sieve_circuit):
@@ -23,6 +23,6 @@ class Complete_circuit(Subtractor_circuit, Adder1, Adder2, Sieve_circuit):
         super().adder1()
         
     def adder2(self):
-        super.adder2()
+        super().adder2()
             
 

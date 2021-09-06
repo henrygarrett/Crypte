@@ -20,9 +20,9 @@ class Adder1(Circuit):
             for j in range(self.adder1_output_size):
                 if j == 0:
                     if i == 0:
-                        total.append(self.half_adder(self.adder1_input.pop(0), self.adder1_input.pop(0)))
+                        total.append(self.half_adder(self.adder1_inputs.pop(0), self.adder1_inputs.pop(0)))
                     else:
-                        total.append(self.half_adder(total.pop(0), self.adder1_input.pop(0)))
+                        total.append(self.half_adder(total.pop(0), self.adder1_inputs.pop(0)))
                 else:
                     if i == 0:
                         total.append(self.full_adder(0, 0))

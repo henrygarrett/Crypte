@@ -187,17 +187,16 @@ class GarbledGate:
         print(f"GATE: {self.output}, TYPE: {self.gate_type}")
         for k, v in self.clear_garbled_table.items():
             # If it's a 2-input gate
-            print(k)
             if len(k) > 1:
-                key_out = v[2]
+                key_out = v[3]
 
                 print(f"[{k[0]}, {k[1]}]: "
-                      f"[{key_out[1]}]")
+                      f"[{key_out}]")
             # Else it's a NOT gate
             else:
-                key_out = v[1]
+                key_out = v[2]
                 print(f"[{k[0]}]: "
-                      f"[{key_out[1]}]")
+                      f"[{key_out}]")
 
     def get_garbled_table(self):
         """Return the garbled table of the gate."""

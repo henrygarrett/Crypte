@@ -3,19 +3,13 @@ import hashlib
 import logging
 import pickle
 import random
-import copy
 import math
 from abc import ABC
 from garbled_circuits import yao, util
-
-from circuits.adder1_circuit import Adder1
-from circuits.adder2_circuit import Adder2
-from circuits.sieve import Sieve_circuit
-from circuits.subtractor import Subtractor_circuit
 from circuits.complete_circuit import Complete_circuit
-
 logging.basicConfig(format="[%(levelname)s] %(message)s",
                     level=logging.WARNING)
+
 
 # Base class for Alice garbler
 class YaoGarbler(ABC):
@@ -39,6 +33,11 @@ class YaoGarbler(ABC):
             }
             self.circuits.append(entry)
 
+
+def _get_encr_bits(pbit, key0, key1):
+    return (key0, 0 ^ pbit), (key1, 1 ^ pbit)
+
+
 class Alice(YaoGarbler):
     """Alice is the creator of the Yao circuit.
 
@@ -55,9 +54,9 @@ class Alice(YaoGarbler):
         oblivious_transfer: Optional; enable the Oblivious Transfer protocol
             (True by default).
     """
-    def __init__(self, input, circuits):
+    def __init__(self, a_input, circuits):
         super().__init__(circuits)
-        self.input = input
+        self.input = a_input
         self.garbled_circuits = []
         self.G = None
         self.c = None
@@ -65,14 +64,14 @@ class Alice(YaoGarbler):
     @staticmethod
     def ot_hash(pub_key, msg_length):
         """Hash function for OT keys."""
-        key_length = (pub_key.bit_length() + 7) // 8  # key length in bytes
-        bytes = pub_key.to_bytes(key_length, byteorder="big")
-        return hashlib.shake_256(bytes).digest(msg_length)
+        key_length = (pub_key.bit_length() + 7) // 8  # key length in byte
+        byte = pub_key.to_bytes(key_length, byteorder="big")
+        return hashlib.shake_256(byte).digest(msg_length)
 
     def ot_send(self):
         self.G = util.PrimeGroup()
         self.c = self.G.gen_pow(self.G.rand_int())
-        return self.G,self.c
+        return self.G, self.c
 
     def ot_receive(self, w, h0):
         h1 = self.G.mul(self.c, self.G.inv(h0))
@@ -87,7 +86,7 @@ class Alice(YaoGarbler):
 
     def garble_circuits(self):
         """Start Yao protocol."""
-        for i,circuit in enumerate(self.circuits):
+        for i, circuit in enumerate(self.circuits):
             to_send = {
                 "circuit": circuit["circuit"],
                 "garbled_tables": circuit["garbled_tables"],
@@ -96,26 +95,26 @@ class Alice(YaoGarbler):
             logging.debug(f"Sending {circuit['circuit']['id']}")
             self.garbled_circuits.append(to_send)
 
+    @property
     def send_inputs(self):
         """Print circuit evaluation for all Bob and Alice inputs.
 
-        Args:
-            entry: A dict representing the circuit to evaluate.
+        entry: A dict representing the circuit to evaluate.
         """
         entry = self.circuits[0]
         circuit, pbits, keys = entry["circuit"], entry["pbits"], entry["keys"]
-        outputs = circuit["out"]
+        # #outputs = circuit["out"]
         a_wires = circuit.get("alice", [])  # Alice's wires
         a_inputs = {}  # map from Alice's wires to (key, encr_bit) inputs
         b_wires = circuit.get("bob", [])  # Bob's wires
         b_keys = {  # map from Bob's wires to a pair (key, encr_bit)
-            w: self._get_encr_bits(pbits[w], key0, key1)
+            w: _get_encr_bits(pbits[w], key0, key1)
             for w, (key0, key1) in keys.items() if w in b_wires
         }
 
         self.b_keys = b_keys # Store b_keys for later OT computations
 
-        #print(f"======== Circuit ID: {circuit['id']} ========")
+        # #print(f"======== Circuit ID: {circuit['id']} ========")
 
         bits_a = self.input  # Alice's inputs
 
@@ -128,9 +127,6 @@ class Alice(YaoGarbler):
         return a_inputs
 
 
-    def _get_encr_bits(self, pbit, key0, key1):
-        return ((key0, 0 ^ pbit), (key1, 1 ^ pbit))
-
 class Bob:
     """Bob is the receiver and evaluator of the Yao circuit.
 
@@ -141,8 +137,8 @@ class Bob:
         oblivious_transfer: Optional; enable the Oblivious Transfer protocol
             (True by default).
     """
-    def __init__(self, input):
-        self.input = input
+    def __init__(self, b_input):
+        self.input = b_input
 
         # First half of OT params sent by Alice
         self.G = None
@@ -152,8 +148,8 @@ class Bob:
     def ot_hash(pub_key, msg_length):
         """Hash function for OT keys."""
         key_length = (pub_key.bit_length() + 7) // 8  # key length in bytes
-        bytes = pub_key.to_bytes(key_length, byteorder="big")
-        return hashlib.shake_256(bytes).digest(msg_length)
+        byte = pub_key.to_bytes(key_length, byteorder="big")
+        return hashlib.shake_256(byte).digest(msg_length)
 
     def ot_send(self, b, G, c):
         self.G = G
@@ -171,7 +167,7 @@ class Bob:
         mb = util.xor_bytes(e[b], ot_hash)
         return mb
 
-    def receive_circuits_and_inputs(self, entry, a_inputs):
+    def receive_circuits_and_inputs(self, entry):
         """Evaluate yao circuit for all Bob and Alice's inputs and
         send back the results.
 
@@ -182,7 +178,7 @@ class Bob:
         self.circuit, self.pbits_out = entry["circuit"], entry["pbits_out"]
         self.garbled_tables = entry["garbled_tables"]
 
-        a_wires = self.circuit.get("alice", [])  # list of Alice's wires
+        # #a_wires = self.circuit.get("alice", [])  # list of Alice's wires
         b_wires = self.circuit.get("bob", [])  # list of Bob's wires
 
         bits_b = self.input  # Bob's inputs
@@ -201,183 +197,113 @@ class Bob:
         logging.debug("Sending circuit evaluation")
         return result
 
+
 # Simple 2-input/output AND test
 def main(circuits, a_input, b_input):
     alice = Alice(a_input, circuits)
+    #alice.circuits[0]['garbled_circuit'].print_garbled_tables()
     bob = Bob(b_input)
 
     # Round 1: Alice
     alice.garble_circuits() # Garbles circuits, alice stores them
     circuit = alice.garbled_circuits[0] # and.json contains only a single circuit
-    a_inputs = alice.send_inputs() # Sends alice's inputs
+    a_inputs = alice.send_inputs  # Sends alice's inputs
 
     # Round 2: Bob
-    b_inputs = bob.receive_circuits_and_inputs(circuit, a_inputs) # Bob receives circuit and alices inputs and prepares for OT
+    b_inputs = bob.receive_circuits_and_inputs(circuit)
+    # Bob receives circuit and alices inputs and prepares for OT
     b_inputs_encr = {}
 
     # Perform OT over the inputs
     for w, b in b_inputs:
-        G,c = alice.ot_send()
-        h0 = bob.ot_send(b,G,c)
+        G, c = alice.ot_send()
+        h0 = bob.ot_send(b, G, c)
         c1, e0, e1 = alice.ot_receive(w, h0)
         b_inputs_encr[w] = pickle.loads(bob.ot_receive(b, c1, e0, e1))
 
     res = bob.evaluate(a_inputs, b_inputs_encr) # Bob evaluates circuit on encrypted inputs
     return res
 
+
 def test_subtractor(how_many, input_size, verbose=True):
     start = setup(how_many, input_size)
-    a_input = start['a_input']
+    a_input = start['a_input'][0]
     b_input = start['b_input']
     true_result = start['true_result'][2]
     values = start['true_result'][0]
     
-    subtractor = Subtractor_circuit(how_many, input_size)
+    subtractor = Complete_circuit(how_many, input_size)
     subtractor.subtractor()
     circuit = "subtractor.json"
     
     res = main(circuit, a_input, b_input)
     view('subtractor', values, true_result, list(res.values())[::-1], verbose)
 
+
 def test_sieve(how_many, input_size, verbose=True):
     start = setup(how_many, input_size)
-    a_input = start['a_input'][1]
+    a_input = start['a_input']
     b_input = start['b_input']
+
     true_result = start['true_result'][3]
     values = start['true_result'][1]
     
     sieve = Complete_circuit(how_many, input_size)
-    sieve.sieve_inputs = start['true_result'][2]
+    sieve.subtractor()
     sieve.sieve()
     circuit = "sieve.json"
     
     res = main(circuit, a_input, b_input)
     view('sieve', values, true_result, list(res.values()), verbose)
 
+
 def test_adder1(how_many, input_size, verbose=True):
-    base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
-    base_in = '{:0' + str(input_size) + 'b}'
-    
-    a_input = [random.randint(0,9) for i in range(how_many)]
-    
-    a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    add = [0 for _ in range(input_size + 1)]
-    add.extend(a_input)
-    a_input = add
-    
-    
-    b_input = [random.randint(0,2**(input_size) -1) for i in range(how_many)]
-    b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    values = b_input[:how_many]
-    true_result = [int(x) for i in base_out.format(sum([1 if i != 0 else 0 for i in values])) for x in i]
-    
-    adder = Adder1(how_many, input_size)
+    start = setup(how_many, input_size)
+    a_input = start['a_input'][1]
+    b_input = start['b_input']
+    true_result = start['true_result'][3]
+    values = start['true_result'][1]
+
+    adder = Complete_circuit(how_many, input_size)
+    adder.subtractor()
+    adder.sieve()
     adder.adder1()
     circuit = "adder1.json"
     
     res = main(circuit, a_input, b_input)
     view('adder1', values, true_result, list(res.values())[::-1], verbose)
 
+
 def test_adder2(how_many, input_size, verbose=True):
-    base_in = '{:0' + str(input_size) + 'b}'
-    
-    a_input = [random.randint(0,9) for i in range(how_many)]
-    
-    a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    add = [0 for _ in range(input_size + 1)]
-    add.extend(a_input)
-    a_input = add
-    
-    
-    b_input = [random.randint(0,2**(input_size) -1) for i in range(how_many)]
-    b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    box = b_input[:math.ceil(math.log(how_many + 0.1, 2))]
-    values = int(''.join(str(e) for e in box),2)
-    true_result = box
-    
-    
-    adder = Adder2(how_many, input_size)
+    start = setup(how_many, input_size)
+    a_input = start['a_input'][1]
+    b_input = start['b_input']
+    true_result = start['true_result'][3]
+    values = start['true_result'][1]
+
+    adder = Complete_circuit(how_many, input_size)
+    adder.subtractor()
+    adder.sieve()
+    adder.adder1()
     adder.adder2()
     circuit = "adder2.json"
     
     res = main(circuit, a_input, b_input)
     view('adder2', values, true_result, list(res.values()), verbose)
 
-def test_complete1(how_many, input_size, verbose=True):
-    base_in = '{:0' + str(input_size) + 'b}'
-    base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1,2))) + 'b}'
-    
-    for _ in range(100):
-        input = [random.randint(0,1) for _ in range(how_many)]
-        values = input
-        true_result = [int(x) for i in base_out.format(sum(copy.deepcopy(input))) for x in i]
-        input = [int(x) for a in input for x in base_in.format(a)]
-        input.insert(0,0)
-        
-        counter = Adder1_circuit(how_many, input_size)
-        counter.counter()
-        counter.adder()
-        circuit = "adder2.json"
-        
-        res = main(circuit, input, [0])
-        view('counter',values, true_result, list(res.values())[::-1], verbose)
 
-def test_complete2(how_many, input_size, verbose=True):
-    base_in = '{:0' + str(input_size) + 'b}'
-    base_out = '{:0' + str(math.ceil(math.log(how_many,2))) + 'b}'
-    
-    a_input = [random.randint(2**(input_size-2),2**(input_size-1)) for i in range(how_many)]
-    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(input_size-2)) for i in range(how_many)]
-    values = str(a_input) + str(b_input)
-    
-    true_result = base_out.format(sum([0 if a_input[i]-b_input[i] == 0 else 1 for i in range(how_many)]))
-    true_result = [int(x) for x in true_result]
-    
+def test_or(a, b, verbose=True):
+    a_input = [a]
+    b_input = [b]
+    true_result = [a or b]
+    values = [a,b]
 
-    a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    add = [0 for _ in range(input_size + 1)]
-    add.extend(a_input)
-    a_input = add
-    b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    counter = Complete_circuit(how_many, input_size)
-    counter.subtractor(lonely=True)
-    counter.filter()
-    counter.adder1()
-    circuit = "adder2.json"
-    
+
+    circuit = "or.json"
+
     res = main(circuit, a_input, b_input)
-    view('filter', values, true_result, list(res.values())[::-1], verbose)
+    view('or', values, true_result, list(res.values()), verbose)
 
-def test_complete3(how_many, input_size, verbose=True):
-    base_in = '{:0' + str(input_size) + 'b}'
-    base_out = '{:0' + str(math.ceil(math.log(how_many+0.1,2))) + 'b}'
-    print(base_out)
-    r = random.randint(0,2**math.ceil(math.log(how_many,2)-1)-1)
-    print(r)
-    a_input = [random.randint(2**(input_size-2),2**(input_size-1)) for i in range(how_many)]
-    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(input_size-2)) for i in range(how_many)]
-    values = str(a_input) + str(b_input)
-    
-    true_result = base_out.format(sum([0 if a_input[i]-b_input[i] == 0 else 1 for i in range(how_many)])+r )
-    true_result = [int(x) for x in true_result]
-    
-
-    a_input = [int(x) for a in a_input for x in base_in.format(a)]
-    add = [int(x) for x in base_out.format(r)]
-    add.extend(a_input)
-    a_input = add
-    a_input.insert(0,0)
-    b_input = [int(x) for b in b_input for x in base_in.format(b)]
-    
-    counter = Complete_circuit(how_many, input_size)
-    counter.subtractor()
-    counter.sieve()
-    counter.adder1()
-    counter.adder2()
-    circuit = "adder2.json"
-    
-    res = main(circuit, a_input, b_input)
-    view('filter', values, true_result, list(res.values())[::-1], verbose)
 
 def view(test, values, true_result, output, verbose):
     if verbose:
@@ -389,16 +315,17 @@ def view(test, values, true_result, output, verbose):
     print('Test ran successfully')
     print('\n')
 
+
 def setup(how_many, input_size):
     base_in = '{:0' + str(input_size) + 'b}'
-    base_out = '{:0' + str(math.ceil(math.log(how_many+0.1,2))) + 'b}'
+    base_out = '{:0' + str(math.ceil(math.log(how_many+0.1, 2))) + 'b}'
     
-    r = random.randint(0,2**math.ceil(math.log(how_many,2)-1)-1)
+    r = random.randint(0, 2**math.ceil(math.log(how_many, 2)-1)-1)
     
-    a_input = [random.randint(2**(input_size-1),2**(input_size)-1) for i in range(how_many)]
-    b_input = [a_input[i] - random.randint(0,1)*random.randint(0,2**(input_size-1)) for i in range(how_many)]
-    
-    
+    a_input = [random.randint(2 ** (input_size-1), 2 ** input_size - 1) for _ in range(how_many)]
+    b_input = [a_input[i] - random.randint(0, 1)*random.randint(0, 2**(input_size-1)) for i in range(how_many)]
+
+    true_result0 = '\n' + str(a_input) + '\n' + str(b_input)
     true_result1 = [a_input[i] - b_input[i] for i in range(how_many)]
     true_result2 = [int(x) for a in true_result1 for x in base_in.format(a)]
     true_result3 = [0 if i == 0 else 1 for i in true_result1]
@@ -408,38 +335,15 @@ def setup(how_many, input_size):
     true_result7 = true_result5 + r
     true_result8 = [int(x) for x in base_out.format(true_result7)]
     
-    true_result = ['\n' + str(a_input) + '\n' + str(b_input)]
-    true_result.append(true_result1)
-    true_result.append(true_result2)
-    true_result.append(true_result3)
-    true_result.append(true_result4)
-    true_result.append(true_result5)
-    true_result.append(true_result6)
-    true_result.append(true_result7)
-    true_result.append(true_result8)
-    
+    true_result = [true_result0, true_result1, true_result2, true_result3, true_result4,
+                   true_result5, true_result6, true_result7, true_result8]
     length = input_size*how_many + math.ceil(math.log(how_many + 0.1, 2)) + 1
-    a_input1 = [int(x) for a in a_input for x in base_in.format(a)]
-    a_input2 = [int(x) for a in true_result1 for x in base_in.format(a)]
+    a_input = [int(x) for a in a_input for x in base_in.format(a)]
     add = [int(x) for x in base_out.format(r)]
-    add.insert(0,0)
-    a_input1 = add + a_input1
-    a_input2 = add + a_input2
-    a_input3 = true_result3 + [0 for _ in range(length-len(true_result3))]
-    a_input4 = true_result6 + [0 for _ in range(length-len(true_result6))]
-    a_input = [a_input1, a_input2, a_input3, a_input4]
+    add.insert(0, 0)
+    a_input = add + a_input
     b_input = [int(x) for b in b_input for x in base_in.format(b)]
     
     return {'a_input': a_input, 'b_input': b_input, 'true_result': true_result}
 
-
-
-
-
-
-
-
 test_sieve(5,32)
-
-
-
