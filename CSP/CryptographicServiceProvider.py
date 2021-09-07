@@ -6,11 +6,11 @@ import math
 from circuits.complete_circuit import Complete_circuit
 from garbled_circuits.parties import Alice
 
+
 class CryptographicServiceProvider():
     def __init__(self, epsilon_budget, generate_keys=False):
         self.privacy_engine = PrivacyEngine(epsilon_budget)
         self.key_manager = KeyManager(generate_keys)
-        self.__r = None
         self.alice = None
 
     def __str__(self):
@@ -54,12 +54,6 @@ class CryptographicServiceProvider():
         return_vector_encrypted = [[public_key.lab_encrypt(bit) for bit in value] for value in return_vector]
         return return_vector_encrypted
 
-    def garbled_circuitcd(self, M, vector_decrypted):
-        r = self.__r
-        vector_clear = [vector_decrypted[i] - M[i] for i in range(len(M))]
-        count_masked = np.count_nonzero(vector_clear) + r
-        return count_masked
-
     def laplace(self, data, sensitivity, privacy_parameter):
         if self.privacy_engine.is_program_allowed(privacy_parameter):
             return [self.key_manager.private_key.lab_decrypt(value) + np.random.default_rng().laplace(scale=(2*sensitivity)/privacy_parameter) for value in data]
@@ -81,7 +75,7 @@ class CryptographicServiceProvider():
         how_many = len(vector_masked)
         input_size = 32 # arbitrary. needs to allow for size of input
         base_in = '{:0' + str(input_size) + 'b}'
-        base_out = '{:0' + str(math.ceil(math.log(how_many + 0.1, 2))) + 'b}'
+        base_out = '{:0' + str(32) + 'b}'
 
         circuit = Complete_circuit(how_many, input_size)
         circuit.subtractor()
@@ -90,19 +84,22 @@ class CryptographicServiceProvider():
         circuit.adder2()
         circuit_file = "circuit.json"
 
-        r = random.randint(0, 7)
+        r = random.randint(0, 10**9)
+        # print('r: ', r)
+        r_enc = self.key_manager.public_key.lab_encrypt(r)
         a_input = [self.key_manager.private_key.lab_decrypt(i) for i in vector_masked]
+        # print('a_input: ', a_input)
         a_input = [int(x) for a in a_input for x in base_in.format(a)]
         add = [int(x) for x in base_out.format(r)]
         add.insert(0, 0)
         a_input = add + a_input
+        # print(len(a_input))
 
-        print(circuit_file)
         self.alice = Alice(a_input, circuit_file)
         self.alice.garble_circuits()  # Garbles circuits, alice stores them
         garbled_circuit = self.alice.garbled_circuits[0]  # only need one circuit
         a_inputs = self.alice.send_inputs
-        return {'garbled_circuit': garbled_circuit, 'a_inputs': a_inputs}
+        return {'garbled_circuit': garbled_circuit, 'a_inputs': a_inputs, 'r_enc': r_enc}
 
     def ot_send(self):
         return self.alice.ot_send()

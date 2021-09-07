@@ -12,6 +12,7 @@ import numpy as np
 from CSP.CryptographicServiceProvider import CryptographicServiceProvider
 from AS.AnalyticsServer import AnalyticsServer
 
+
 def init_crypte(ask_prompt=True, verbose=True):
     if (not ask_prompt) or (input('Replace budget, keys and data? y/n\n') != 'y'):
         generate_keys = False
@@ -47,9 +48,7 @@ def init_crypte(ask_prompt=True, verbose=True):
         print("\n")
     return AS, CSP
 
-
 # Initialise Crypte system
-
 AS, CSP = init_crypte(ask_prompt=False)
 
 # Raw data for the tests
@@ -58,7 +57,6 @@ TEST_DATA = [['25', 'spain', 'yes'], ['38', 'france', 'no'], ['39', 'italy', 'no
 
 
 # Test functions
-
 # Tests that the aggregator correctly encodes and decodes data to and from one-hot vector form
 def test_encode_decode(verbose=True):
     decoded_data = AS.aggregator.decode_row(AS.aggregator.data_encoded[0])
@@ -170,6 +168,7 @@ def test_project(verbose=True):
     assert one_attribute_test.shape == (5, 1, 21)
     return True
 
+
 # Tests the Count Operator works correctly
 def test_count(verbose=True):
     bit_vector = [1, 0, 0, 1, 1]
@@ -276,10 +275,11 @@ def test_group_by_count_encoded(verbose=True):
 
 
 # Tests Count Distinct Operator works correctly
-def test_count_distinct(verbose=True):
-    input_data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 2, CSP)
-    test_output = AS.program_executor.count_distinct(input_data, CSP)
-    true_value = 2
+def test_count_distinct(CSP, verbose=True):
+    input_data = AS.program_executor.group_by_count(AS.aggregator.data_encrypted, 0, CSP)
+    # print([CSP.key_manager.private_key.lab_decrypt(value) for value in input_data])
+    test_output = CSP.key_manager.private_key.lab_decrypt(AS.program_executor.count_distinct(input_data, CSP))
+    true_value = 5
     
     if verbose:
         print("TEST: Group Distinct")
@@ -351,5 +351,5 @@ def test_noisy_max(verbose=True):
 # test_count_distinct()
 # test_noisy_max()
 # test_laplace()
-test_count_distinct()
+test_count_distinct(CSP)
 

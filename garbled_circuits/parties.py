@@ -121,6 +121,9 @@ class Alice(YaoGarbler):
         bits_a = self.input  # Alice's inputs
 
         # Map Alice's wires to (key, encr_bit)
+        # print(keys.keys())
+        # print(len(a_wires))
+        # print(len(bits_a))
         for i in range(len(a_wires)):
             a_inputs[a_wires[i]] = (keys[a_wires[i]][bits_a[i]],
                                     pbits[a_wires[i]] ^ bits_a[i])
@@ -340,9 +343,9 @@ def test_adder2(how_many, input_size, verbose=False):
     res = main(circuit, a_input, b_input)
     view('adder2', values, true_result, list(res.values()), verbose)
 
-for i in range(0,10):
-    test_subtractor(5,32)
-    test_sieve(5,32)
-    test_adder1(5,32)
-    test_adder2(5,32)
+# for i in range(0,10):
+#     test_subtractor(5,32)
+#     test_sieve(5,32)
+#     test_adder1(5,32)
+#     test_adder2(5,32)
 

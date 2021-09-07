@@ -15,7 +15,7 @@ class Circuit():
         self.adder1_inputs = []
         self.adder2_inputs = []
         
-        self.adder1_output_size = math.ceil(math.log(self.number_of_elements + 0.1, 2))#NUMBER OF BITS IN THE OUTPUT
+        self.adder1_output_size = 32 #NUMBER OF BITS IN THE OUTPUT
         self.dictionary = {"name": "Test","circuits": [{"id": "counter","alice": None,"bob": None,"out": None,"gates": []}]}
         self.circuit = self.dictionary['circuits'][0]
         alice_length = self.input_size*self.number_of_elements + self.adder1_output_size + 1

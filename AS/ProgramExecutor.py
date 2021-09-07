@@ -5,6 +5,7 @@ import copy
 from garbled_circuits.parties import Bob
 import pickle
 
+
 class ProgramExecutor():
     def __init__(self, public_key, num_rows, num_attr):
         self.public_key = public_key
@@ -81,7 +82,8 @@ class ProgramExecutor():
     
     def group_by_count_encoded(self, encrypted_data, attribute, CSP):
         self.sensitivity *= 2
-        def rightRotate(lists, num):
+
+        def right_rotate(lists, num):
             output_list = []
             length = len(lists)
             # Will add values from n up to the new list
@@ -97,19 +99,22 @@ class ProgramExecutor():
         M = [random.randint(0,10**9) for n in range(len(gbc_vector))]
         gbc_vector_masked = [self.public_key.lab_encrypt(M[i])._lab_add_encrypted(gbc_vector[i]) for i in range(len(gbc_vector))]
         return_vector_encrypted = CSP.group_by_count_encoded(gbc_vector_masked, len(encrypted_data))
-        return [rightRotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]
+        return [right_rotate(item, M[i]) for i, item in enumerate(return_vector_encrypted)]
     
     def count_distinct(self, input_vector, CSP):
         input_size = 32  # arbitrary. needs to allow for size of input
         base_in = '{:0' + str(input_size) + 'b}'
-        M = [self.public_key.lab_encrypt(random.randint(0,10**40)) for _ in input_vector]
-        b_input = [int(x) for b in M for x in base_in.format(b.message_obfuscated)]
+        M = [random.randint(0, 10**9) for _ in input_vector]
+        # print('b_input: ', M)
+        b_input = [int(x) for b in M for x in base_in.format(b)]
         self.bob = Bob(b_input)
+        M = [self.public_key.lab_encrypt(m) for m in M]
         vector_masked = [input_vector[i]._lab_add_encrypted(M[i]) for i in range(len(M))]
         csp_return = CSP.count_distinct(vector_masked)
 
         garbled_circuit = csp_return['garbled_circuit']
         a_inputs = csp_return['a_inputs']
+        r_enc = csp_return['r_enc']
         b_inputs = self.bob.receive_circuits_and_inputs(garbled_circuit)
         b_inputs_encr = {}
 
@@ -120,8 +125,11 @@ class ProgramExecutor():
             b_inputs_encr[w] = pickle.loads(self.bob.ot_receive(b, c1, e0, e1))
 
         res = self.bob.evaluate(a_inputs, b_inputs_encr)  # Bob evaluates circuit on encrypted inputs
-        return list(res.values())
-
+        # print(res)
+        res = int(''.join(str(value) for value in list(res.values())), 2) # converts result from binary list to integer
+        # print(res)
+        unmasked_result = self.public_key.lab_encrypt(res)._lab_subtract_encrypted(r_enc)
+        return unmasked_result
 
     def laplace(self, data, privacy_parameter, CSP):
         data = data if type(data) == list else [data]

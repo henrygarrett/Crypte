@@ -6,14 +6,12 @@ Created on Tue Aug 31 13:03:05 2021
 """
 import json
 from circuits.circuit import Circuit
+
+
 class Adder1(Circuit):
-    def __init__(self,number_of_elements, input_size):
+    def __init__(self, number_of_elements, input_size):
         super().__init__(number_of_elements, input_size)
-        
-        
-    
-    
-    
+
     def adder1(self):
         total = []
         for i in range(self.number_of_elements - 1):
@@ -30,17 +28,16 @@ class Adder1(Circuit):
                         total.append(self.full_adder(total.pop(0), 0))
         self.adder2_input = total
         self.circuit['out'] = total
-        with open('adder1.json','w') as file:
+        with open('adder1.json', 'w') as file:
             json.dump(self.dictionary, file)
-    
 
     def half_adder(self, alice, bob):
         start = max(max(self.circuit['alice']),max(self.circuit['bob']), max([x['id'] for x in self.circuit['gates']]))
         self.circuit['gates'].append({"id": start + 1, "type": "XOR", "in": [alice, bob]})
         self.circuit['gates'].append({"id": start + 2, "type": "AND", "in": [alice, bob]})
         self.carry = start + 2
-        return start + 1        
-    
+        return start + 1
+
     def full_adder(self, alice, bob):
         start = self.circuit['gates'][-1]['id']
         self.circuit['gates'].append({"id": start + 1, "type": "XOR", "in": [alice, bob]})
